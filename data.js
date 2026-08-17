@@ -139,7 +139,7 @@ const LIFTERS = [
     name: "Ben Thornes",
     slug: "benthornes",
     ig: "wakefield_strength_academy",
-    squat: 290, bench: 160, deadlift: 315.5, total: 752.5, dots: 453.92,
+    squat: 290, bench: 160, deadlift: 317.5, total: 752.5, dots: 453.92,
     fed: "BPU", equip: "Wraps", bodyweight: "104.9",
   },
   {
