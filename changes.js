@@ -14,8 +14,8 @@
 //   ageing out after 7 days. A new PB for a lifter overrides their older one.
 
 const CHANGES = {
-  "generated": "2026-08-28T21:16:42.376Z",
-  "baselineDate": "2026-08-22T11:10:10.907Z",
+  "generated": "2026-08-29T15:22:06.069Z",
+  "baselineDate": "2026-08-29T15:22:06.069Z",
   "prevRankActive": {
     "wyliesung": 1,
     "mikejones1": 2,
