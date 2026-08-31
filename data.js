@@ -280,8 +280,8 @@ const LIFTERS = [
     name: "Annie Burns",
     slug: "anneburns",
     ig: "anneinthegym",
-    squat: 170.5, bench: 100.5, deadlift: 190.5, total: 461.5, dots: 502.99,
-    fed: "APLA", equip: "Raw", bodyweight: "61.6",
+    squat: 177.5, bench: 105, deadlift: 195, total: 477.5, dots: 521.22,
+    fed: "IPF", equip: "Raw", bodyweight: "61.5",
     legacy: true,
   },
   {
