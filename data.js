@@ -160,7 +160,7 @@ const LIFTERS = [
     name: "Lee McCafferty",
     slug: "leemccafferty",
     ig: "mccaff_strength_system",
-    squat: 265, bench: 162.5, deadlift: 250, total: 677.5, dots: 385.41,
+    squat: 267.5, bench: 165, deadlift: 250, total: 677.5, dots: 385.41,
     fed: "WPC", equip: "Wraps", bodyweight: "123.5",
   },
   {
