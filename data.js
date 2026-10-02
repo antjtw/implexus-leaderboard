@@ -296,7 +296,7 @@ const LIFTERS = [
     name: "Vic Hart",
     slug: "victoriahart",
     ig: "vicsquats_",
-    squat: 175, bench: 102.5, deadlift: 172.5, total: 450, dots: 488.26,
+    squat: 178.5, bench: 102.5, deadlift: 172.5, total: 450, dots: 488.26,
     fed: "BP", equip: "Raw", bodyweight: "62.1",
     legacy: true,
   },

@@ -14,7 +14,7 @@
 //   ageing out after 7 days. A new PB for a lifter overrides their older one.
 
 const CHANGES = {
-  "generated": "2026-10-01T17:10:27.415Z",
+  "generated": "2026-10-02T16:24:00.435Z",
   "baselineDate": "2026-09-28T18:17:39.640Z",
   "prevRankActive": {
     "wyliesung": 1,
@@ -219,5 +219,21 @@ const CHANGES = {
   ],
   "arrivals": [],
   "departures": [],
-  "pbEvents": []
+  "pbEvents": [
+    {
+      "slug": "victoriahart",
+      "name": "Vic Hart",
+      "improved": {
+        "squat": {
+          "from": 175,
+          "to": 178.5
+        }
+      },
+      "dots": {
+        "from": 488.26,
+        "to": 488.26
+      },
+      "date": "2026-10-02T16:24:00.435Z"
+    }
+  ]
 };
