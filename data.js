@@ -136,13 +136,6 @@ const LIFTERS = [
     fed: "BPU", equip: "Raw", bodyweight: "84.8",
   },
   {
-    name: "Ben Thornes",
-    slug: "benthornes",
-    ig: "wakefield_strength_academy",
-    squat: 290, bench: 160, deadlift: 317.5, total: 752.5, dots: 453.92,
-    fed: "BPU", equip: "Wraps", bodyweight: "104.9",
-  },
-  {
     name: "Rob Jacobs",
     slug: "robjacobs",
     ig: "Robj1190",
@@ -306,6 +299,14 @@ const LIFTERS = [
     ig: "josh_hinchcliffe_pl",
     squat: 232.5, bench: 160, deadlift: 280, total: 670, dots: 456.45,
     fed: "PWFL", equip: "Raw", bodyweight: "81.6",
+    legacy: true,
+  },
+  {
+    name: "Ben Thornes",
+    slug: "benthornes",
+    ig: "wakefield_strength_academy",
+    squat: 290, bench: 160, deadlift: 317.5, total: 752.5, dots: 453.92,
+    fed: "BPU", equip: "Wraps", bodyweight: "104.9",
     legacy: true,
   },
 
