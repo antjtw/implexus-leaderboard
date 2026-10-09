@@ -31,13 +31,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=2" />
 </head>
 <body>
 
   <header class="site-header">
     <div class="header-inner">
       <h1 class="site-title">Lifters who do or did lift at Unit 9b Carlton Mills, Pickering Street, Armley, Leeds, LS12 2QG</h1>
+      <button id="admin-open" class="admin-cog" type="button" aria-label="Admin" title="Admin">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94a7.6 7.6 0 0 0 .06-.94 7.6 7.6 0 0 0-.06-.94l2.03-1.58a.48.48 0 0 0 .12-.61l-1.92-3.32a.48.48 0 0 0-.59-.21l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54a.47.47 0 0 0-.48-.41h-3.84a.47.47 0 0 0-.47.41l-.36 2.54a7.3 7.3 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.21L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58a7.8 7.8 0 0 0 0 1.88l-2.03 1.58a.48.48 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.21l2.39-.96c.5.38 1.04.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54a7.3 7.3 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.21l1.92-3.32a.48.48 0 0 0-.12-.61l-2.01-1.58ZM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2Z"/></svg>
+      </button>
     </div>
   </header>
 
@@ -71,8 +74,11 @@
     <p class="built-by">Built by Ant #FFF &mdash; &copy; Until the heat death of the universe</p>
   </main>
 
-  <script src="data.js"></script>
-  <script src="changes.js"></script>
-  <script src="app.js"></script>
+  <script src="config.js?v=2"></script>
+  <script src="supabase.js?v=2"></script>
+  <script src="data.js?v=2"></script>
+  <script src="changes.js?v=2"></script>
+  <script src="app.js?v=2"></script>
+  <script src="admin.js?v=2"></script>
 </body>
 </html>

@@ -30,6 +30,13 @@
   }
   function fmtDots(val) { return val.toFixed(2); }
 
+  // Names can come from the admin screen, so never trust them as HTML
+  function esc(str) {
+    return String(str).replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    })[c]);
+  }
+
   // ── Sparse-page captions ──────────────────────────────────────
   // Shown centred below the rows on a final leaderboard page with ≤4 lifters.
   // Picked 80% from the wholesome group, 20% from the jokes group, fresh each
@@ -231,6 +238,47 @@
     return built;
   }
 
+  // ── Live roster (Supabase) ───────────────────────────────────
+  // data.js holds the numbers from the last scrape. The roster in Supabase is
+  // the source of truth for WHO is on the board and how they appear, so admin
+  // edits show straight away: renames, legacy changes and removals apply on
+  // top of data.js here. New lifters appear once the scraper has their numbers.
+  const SCRAPED = LIFTERS.map(l => ({ ...l }));
+  const scrapedSlugs = new Set(SCRAPED.map(l => l.slug));
+
+  function applyRoster(roster) {
+    if (!Array.isArray(roster) || roster.length === 0) return; // not seeded: keep data.js
+    const bySlugScraped = new Map(SCRAPED.map(l => [l.slug, l]));
+    const next = [];
+    for (const r of roster) {
+      const base = bySlugScraped.get(r.slug);
+      if (!base) continue; // waiting for the scraper
+      const l = { ...base, name: r.name, ig: r.ig || null };
+      if (r.legacy) l.legacy = true; else delete l.legacy;
+      next.push(l);
+    }
+    LIFTERS.splice(0, LIFTERS.length, ...next);
+    render();
+    if (dynamicActive) {
+      // Carry on from the same point with a playlist built from the new list
+      dynamicPlaylist = buildPlaylist(getList());
+      playlistIndex = Math.min(playlistIndex, dynamicPlaylist.length);
+    }
+  }
+
+  function loadRoster() {
+    if (typeof ImplexusDB === "undefined" || !ImplexusDB.configured) return Promise.resolve(null);
+    return ImplexusDB.listLifters(6000)
+      .then(roster => { applyRoster(roster); return roster; })
+      .catch(() => null); // offline or unreachable: data.js stands
+  }
+
+  // Used by admin.js to refresh the board behind it after a change
+  window.ImplexusBoard = {
+    applyRoster,
+    hasNumbers: slug => scrapedSlugs.has(slug),
+  };
+
   // ── Data helpers ─────────────────────────────────────────────
   function getList() {
     return (showLegacy ? [...LIFTERS] : LIFTERS.filter(l => !l.legacy))
@@ -362,7 +410,7 @@
         <span class="col-rank ${rankClass}">${rank}${movementArrow(lifter.slug, rank)}</span>
         <div class="col-name-wrap">
           <div class="name-line">
-            <a class="athlete-name" href="https://www.openpowerlifting.org/u/${lifter.slug}" target="_blank" rel="noopener">${lifter.name}</a>
+            <a class="athlete-name" href="https://www.openpowerlifting.org/u/${lifter.slug}" target="_blank" rel="noopener">${esc(lifter.name)}</a>
             ${legacyBadge}${igLink(lifter.ig)}
           </div>
         </div>
@@ -543,7 +591,7 @@
     <div class="dyn-row" data-rank="${rank}">
       <div class="dyn-bar" style="width:${width}%"></div>
       <span class="dyn-rank ${rankClass}">${rank}${movementArrow(lifter.slug, rank)}</span>
-      <span class="dyn-name">${lifter.name}${legacyTag}</span>
+      <span class="dyn-name">${esc(lifter.name)}${legacyTag}</span>
       <span class="dyn-stats">
         ${stat("SQ", lifter.squat)}
         ${stat("BP", lifter.bench)}
@@ -578,12 +626,12 @@
       const fakeClass = l.fake ? 'dyn-fighter-fake' : '';
       const teamClass = l.team ? 'dyn-fighter-team' : '';
       const imageHTML = l.image
-        ? `<div class="dyn-fighter-img-wrap"><img class="dyn-fighter-img" src="${l.image}" alt="${l.name}" /></div>`
+        ? `<div class="dyn-fighter-img-wrap"><img class="dyn-fighter-img" src="${l.image}" alt="${esc(l.name)}" /></div>`
         : '';
       return `
         <div class="dyn-fighter dyn-fighter-${side} ${fakeClass} ${teamClass}">
           ${imageHTML}
-          <div class="dyn-fighter-name">${l.name}</div>
+          <div class="dyn-fighter-name">${esc(l.name)}</div>
           ${dotsDisplay(l)}
           <div class="dyn-fighter-meta">${metaLine(l)}</div>
         </div>`;
@@ -622,6 +670,12 @@
   }
 
   // ── PB callout slide (this week's new personal bests) ─────────
+  // The event stores the name at scrape time; prefer the current one
+  function currentName(ev) {
+    const l = bySlug(ev.slug);
+    return l ? l.name : ev.name;
+  }
+
   function showPbSlide(ev) {
     // Build the list of improved lifts (label + from → to)
     const liftLabels = { squat: "Squat", bench: "Bench", deadlift: "Deadlift", total: "Total" };
@@ -638,7 +692,7 @@
     overlay.innerHTML = `
       <div class="dyn-rivalry dyn-pb">
         <div class="dyn-rivalry-label dyn-pb-label">New PB</div>
-        <div class="dyn-pb-name">${ev.name}</div>
+        <div class="dyn-pb-name">${esc(currentName(ev))}</div>
         <div class="dyn-pb-dots">
           <span class="dyn-pb-dots-val">${fmtDots(ev.dots.to)}</span>
           <span class="dyn-pb-dots-tag">DOTS</span>
@@ -708,19 +762,27 @@
 
     const ms = target - now;
     // setTimeout caps at ~24.8 days; a max of 24h is well within range.
-    setTimeout(() => {
-      // Preserve state across the reload, then reload from the server.
-      try { window.location.hash = currentStateHash(); } catch (_) {}
-      window.location.reload();
-    }, ms);
+    setTimeout(reloadWhenIdle, ms);
   }
 
-  // Restore state from the hash on load (set by the daily reload).
+  function reloadWhenIdle() {
+    // Someone mid-edit in the admin screen: try again in 10 minutes
+    if (document.body.classList.contains("admin-open")) {
+      setTimeout(reloadWhenIdle, 10 * 60 * 1000);
+      return;
+    }
+    // Preserve state across the reload, then reload from the server.
+    try { window.location.hash = currentStateHash(); } catch (_) {}
+    window.location.reload();
+  }
+
+  // Restore state from the hash on load (set by the daily reload, and kept in
+  // step as people switch views). With no hash, arrive in dynamic mode; tapping
+  // it drops to the static board, which then sticks for this tab.
   function restoreFromHash() {
     const h = (window.location.hash || "").replace(/^#/, "");
-    if (!h) return;
     const wantLegacy = h.endsWith("-legacy");
-    const wantDynamic = h.startsWith("dynamic");
+    const wantDynamic = !h || h.startsWith("dynamic");
 
     if (wantLegacy) applyLegacy(true);
 
@@ -823,7 +885,8 @@
     initDynamic();
     render();
     setUpdatedLine();       // show real refresh date if available
-    restoreFromHash();      // re-apply state if we just auto-reloaded
+    restoreFromHash();      // re-apply state (dynamic by default)
+    loadRoster();           // apply live roster edits on top of data.js
     scheduleDailyReload();  // arm the next daily 12:15 refresh
   }
 

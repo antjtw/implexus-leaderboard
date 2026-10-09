@@ -10,9 +10,17 @@ on:
   schedule:
     - cron: "0 11 * * *"   # 11:00 UTC daily (noon BST / 11am GMT)
   workflow_dispatch: {}    # manual "Run workflow" button
+  repository_dispatch:     # sent by Supabase when the roster changes
+    types: [roster-changed]  # (optional; see supabase/instant-sync.sql)
 
 permissions:
   contents: write          # allow the action to commit data.js / changes.js
+
+# One refresh at a time. A burst of admin edits queues a single follow-up run
+# (GitHub keeps only the newest pending one), which reads the latest roster.
+concurrency:
+  group: leaderboard-refresh
+  cancel-in-progress: false
 
 jobs:
   refresh:
@@ -36,6 +44,7 @@ jobs:
           if [ -n "$(git status --porcelain data.js changes.js)" ]; then
             git add data.js changes.js
             git commit -m "Leaderboard refresh ($(date -u +%Y-%m-%d))"
+            git pull --rebase   # in case main moved while scraping
             git push
             echo "Committed and pushed updated data."
           else

@@ -1,0 +1,47 @@
+-- Implexus Powerlifting — initial roster
+-- Run once in the Supabase SQL Editor, after setup.sql. Copies the 40 lifters
+-- that were in data.js when Supabase was introduced. Safe to re-run: anyone
+-- already in the table is left alone.
+
+insert into public.lifters (name, slug, ig, legacy) values
+  ('Wylie Du Sung', 'wyliesung', 'wyliesung28', false),
+  ('Mike Jones', 'mikejones1', 'mikejoneswigan', false),
+  ('Jurassic Gen', 'genevievecollins', 'swole_mami', false),
+  ('Chris Jennings', 'chrisjennings', 'chris_implexus', false),
+  ('Ant White', 'anthonywhite1', 'shred.kemper', false),
+  ('Nick Johnstone', 'nickjohnstone', 'njfullpower', false),
+  ('Talia Firth', 'taliafirth', 'talsssssx', false),
+  ('Steve Whittles', 'stevewhittles', 'mrnorfgym', false),
+  ('Will Webb', 'williamwebb1', 'willwebbpower', false),
+  ('Ash Keeble', 'ashlingkeeble', 'ashlinglifts', false),
+  ('Joe Curzon', 'joecurzon', 'joecurzon93', false),
+  ('Toby Solomon', 'tobysolomon', 'toby_solomon_', false),
+  ('Matt Anderson', 'matthewanderson2', 'mattslifts', false),
+  ('Owen Crisp', 'owencrisp', 'owen_crisp', false),
+  ('Jodie Barnsley', 'jodiebarnsley', null, false),
+  ('Laura Jones', 'laurajones6', 'lauraelizabeth193', false),
+  ('Jack Larkins-Thomas', 'jacklarkinsthomas', 'jackliftingstuff', false),
+  ('Dr. Pete King', 'peterking1', 'kingpete__', false),
+  ('Rob Jacobs', 'robjacobs', 'Robj1190', false),
+  ('John Cousins', 'johncousins1', null, false),
+  ('Lee McCafferty', 'leemccafferty', 'mccaff_strength_system', false),
+  ('Chloe Boomer', 'chloeboomer', 'boomer_strength', false),
+  ('Finn Davis', 'finndavis', 'finndavispl', true),
+  ('Kai Richardson', 'kairichardson', 'koach_kai', true),
+  ('Leo Hannan', 'leohannan', 'leo.hannan', true),
+  ('Sam Lusher', 'samlusher', 'lush_sa94', true),
+  ('Chris Onuoha', 'chrisonuoha', 'chris_onu', true),
+  ('Alex Shortland', 'alexshortland', 'alex.shortland', true),
+  ('Kelly Shortland', 'kellybroadbent', null, true),
+  ('Rory Turnbull', 'roryturnbull', 'rpturnbull', true),
+  ('Gerry-Lee Pierre', 'gerryleepierre', 'gerryleepierre', true),
+  ('Karl Daniel', 'karldaniel', 'only_2_ks', true),
+  ('Brady Crooks', 'bradycrooks', null, true),
+  ('Tony McLaughlin', 'anthonymclaughlin1', 'fat_tony2', true),
+  ('Dr. Samriddha Ranjan', 'samriddharanjan', 'riddhiculous.strength', true),
+  ('Annie Burns', 'anneburns', 'anneinthegym', true),
+  ('Max Guo', 'maxguo', 'maxguo83kg', true),
+  ('Vic Hart', 'victoriahart', 'vicsquats_', true),
+  ('Josh Hinchcliffe', 'joshhinchcliffe', 'josh_hinchcliffe_pl', true),
+  ('Ben Thornes', 'benthornes', 'wakefield_strength_academy', true)
+on conflict (slug) do nothing;

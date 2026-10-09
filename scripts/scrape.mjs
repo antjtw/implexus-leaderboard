@@ -1,15 +1,18 @@
 #!/usr/bin/env node
 /**
- * Implexus Powerlifting — weekly scraper
+ * Implexus Powerlifting — daily scraper
  *
- * Reads data.js, fetches every lifter's OpenPowerlifting profile, re-derives
- * PBs (squat/bench/deadlift/total/DOTS) and the fed/equip/bodyweight from the
- * competition row that produced their best DOTS, then:
- *   - writes an updated data.js (preserving name, slug, ig, legacy, ordering)
+ * Reads the roster (name, slug, ig, legacy) from Supabase, falling back to
+ * data.js if Supabase isn't configured or can't be reached. Fetches every
+ * lifter's OpenPowerlifting profile, re-derives PBs (squat/bench/deadlift/
+ * total/DOTS) and the fed/equip/bodyweight from the competition row that
+ * produced their best DOTS, then:
+ *   - writes an updated data.js (roster details + scraped numbers)
  *   - writes changes.js (previous ranks for both views + this week's PB events)
  *
  * Defensive by design:
  *   - a profile that fails to fetch or parse keeps its EXISTING data untouched
+ *   - a NEW lifter whose profile fails is left out until a later run succeeds
  *   - if too few profiles parse (looks like a site-wide breakage), it ABORTS
  *     without writing anything, so a bad run can never wipe the board.
  *
@@ -23,6 +26,7 @@ import { dirname, join } from "node:path";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
 const DATA_PATH = join(ROOT, "data.js");
+const CONFIG_PATH = join(ROOT, "config.js");
 const CHANGES_PATH = join(ROOT, "changes.js");
 
 const BASE = "https://www.openpowerlifting.org/u/";
@@ -43,6 +47,62 @@ function loadLifters() {
   }
   return lifters;
 }
+
+// ── Load the roster from Supabase ────────────────────────────────
+// Uses the same public URL + publishable key as the site (config.js), which
+// can read the roster. SUPABASE_URL / SUPABASE_KEY env vars override them.
+// Returns null (caller falls back to data.js) if unconfigured or unreachable,
+// or if the table is empty, which means it hasn't been seeded yet.
+function loadSupabaseConfig() {
+  let cfg = {};
+  try {
+    const src = readFileSync(CONFIG_PATH, "utf8");
+    // eslint-disable-next-line no-new-func
+    cfg = new Function(`${src}; return SUPABASE_CONFIG;`)() || {};
+  } catch (_) { /* no config.js: env vars only */ }
+  return {
+    url: (process.env.SUPABASE_URL || cfg.url || "").replace(/\/+$/, ""),
+    key: process.env.SUPABASE_KEY || cfg.key || "",
+  };
+}
+
+async function loadRoster() {
+  const { url, key } = loadSupabaseConfig();
+  if (!url || !key) {
+    console.log("Supabase not configured; using the roster in data.js");
+    return null;
+  }
+  try {
+    const res = await fetch(
+      `${url}/rest/v1/lifters?select=name,slug,ig,legacy&order=created_at.asc,id.asc`,
+      { headers: { apikey: key } }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) {
+      console.warn("Supabase roster is empty (not seeded yet?); using data.js");
+      return null;
+    }
+    return rows.map((r) => ({ name: r.name, slug: r.slug, ig: r.ig || null, legacy: Boolean(r.legacy) }));
+  } catch (err) {
+    console.warn(`Could not read roster from Supabase (${err.message}); using data.js`);
+    return null;
+  }
+}
+
+// Combine the roster with the numbers already in data.js. Roster fields win;
+// numbers carry over by slug. A lifter with no previous numbers is new.
+function mergeRoster(roster, existing) {
+  const bySlug = new Map(existing.map((l) => [l.slug, l]));
+  return roster.map((r) => {
+    const prev = bySlug.get(r.slug);
+    const merged = { ...(prev || {}), ...r };
+    if (!r.legacy) delete merged.legacy;
+    return merged;
+  });
+}
+
+const hasNumbers = (l) => typeof l.dots === "number" && l.dots > 0;
 
 // Load the existing CHANGES object from changes.js (for the 7-day rolling
 // window). Returns a safe empty default if the file is missing or unreadable.
@@ -154,7 +214,7 @@ function serialiseData(lifters) {
       `    slug: ${JSON.stringify(l.slug)},`,
       `    ig: ${l.ig == null ? "null" : JSON.stringify(l.ig)},`,
       `    squat: ${l.squat}, bench: ${l.bench}, deadlift: ${l.deadlift}, total: ${l.total}, dots: ${l.dots},`,
-      `    fed: ${JSON.stringify(l.fed)}, equip: ${JSON.stringify(l.equip)}, bodyweight: ${JSON.stringify(String(l.bodyweight))},`,
+      `    fed: ${JSON.stringify(l.fed ?? null)}, equip: ${JSON.stringify(l.equip ?? null)}, bodyweight: ${l.bodyweight == null ? "null" : JSON.stringify(String(l.bodyweight))},`,
     ];
     if (l.legacy) parts.push(`    legacy: true,`);
     parts.push(`  },`);
@@ -171,8 +231,9 @@ function serialiseData(lifters) {
 // individual lift PBs are taken across both equip categories.
 // legacy: true = former member, shown only when legacy filter is on.
 //
-// This file is refreshed automatically every Wednesday by scripts/scrape.mjs.
-// Add new lifters by hand; the scraper only updates lifters already listed.
+// This file is written automatically every day by scripts/scrape.mjs. Once
+// Supabase is connected, the roster (who's on the board, names, Instagram,
+// legacy) comes from the admin screen, and hand edits to it here are replaced.
 
 const LIFTERS = [
   // ── ACTIVE MEMBERS ──────────────────────────────────────────
@@ -228,8 +289,16 @@ function reRankOverRoster(baselineMap, currentSlugs) {
 }
 
 async function main() {
-  const lifters = loadLifters();
-  console.log(`Loaded ${lifters.length} lifters from data.js`);
+  const existing = loadLifters();
+  const roster = await loadRoster();
+  const lifters = roster ? mergeRoster(roster, existing) : existing;
+  console.log(roster
+    ? `Loaded ${roster.length} lifters from Supabase (${lifters.filter((l) => !hasNumbers(l)).length} new)`
+    : `Loaded ${lifters.length} lifters from data.js`);
+
+  // The board as it stood before this run: roster changes (legacy, removals)
+  // applied, new lifters not yet included because they have no numbers.
+  const before = lifters.filter(hasNumbers);
 
   const prev = loadChanges();
   const now = new Date();
@@ -252,8 +321,8 @@ async function main() {
   const baselineAge = prev.baselineDate ? (now - new Date(prev.baselineDate)) : Infinity;
   const baselineExpired = baselineAge >= WINDOW_DAYS * DAY_MS;
 
-  const preRankActive = rankMap(lifters.filter((l) => !l.legacy));
-  const preRankAll = rankMap(lifters);
+  const preRankActive = rankMap(before.filter((l) => !l.legacy));
+  const preRankAll = rankMap(before);
 
   let baselineDate, prevRankActive, prevRankAll, rosterActive, rosterAll;
   if (baselineExpired || !prev.prevRankActive || Object.keys(prev.prevRankActive).length === 0) {
@@ -277,6 +346,7 @@ async function main() {
 
   const updated = [];
   const newPbEvents = [];
+  const pending = new Set();   // new lifters whose profile couldn't be read yet
   let okCount = 0;
 
   for (const lifter of lifters) {
@@ -324,6 +394,13 @@ async function main() {
       okCount++;
       console.log(`  ✓ ${lifter.name} (${scraped.dots})`);
     } catch (err) {
+      if (!hasNumbers(lifter)) {
+        // New lifter with nothing to show yet: leave them off this run's board
+        console.warn(`  ! ${lifter.name}: ${err.message} (new lifter, not added yet)`);
+        pending.add(lifter.slug);
+        await sleep(REQUEST_DELAY_MS);
+        continue;
+      }
       // Keep existing data untouched on any failure
       console.warn(`  ! ${lifter.name}: ${err.message} (kept existing data)`);
     }
@@ -340,6 +417,11 @@ async function main() {
     );
     process.exit(1);
   }
+
+  // Lifters left off the board this run aren't part of the roster yet
+  for (const slug of pending) { activeSlugs.delete(slug); allSlugs.delete(slug); }
+  rosterActive = rosterActive.filter((slug) => !pending.has(slug));
+  rosterAll = rosterAll.filter((slug) => !pending.has(slug));
 
   // Compute new ranks AFTER updating
   const newRankActive = rankMap(updated.filter((l) => !l.legacy));
@@ -401,7 +483,7 @@ async function main() {
     curRankAll,
     rosterActive,         // active slugs as of this run (for roster-change detection)
     rosterAll,
-    arrivals,             // active slugs new since baseline (shown as NEW, not movers)
+    arrivals: arrivals.filter((slug) => !pending.has(slug)),  // active slugs new since baseline (shown as NEW, not movers)
     departures,           // slugs that left/were legacy'd since the baseline
     pbEvents,             // rolling 7-day window of PBs
   };
@@ -411,7 +493,8 @@ async function main() {
 
   console.log(
     `\nDone. ${okCount}/${lifters.length} refreshed, ` +
-    `${pbEvents.length} PB event(s) this week.`
+    `${pbEvents.length} PB event(s) this week.` +
+    (pending.size ? ` Not added yet: ${[...pending].join(", ")}.` : "")
   );
 }
 
