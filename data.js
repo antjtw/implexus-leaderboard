@@ -4,8 +4,9 @@
 // individual lift PBs are taken across both equip categories.
 // legacy: true = former member, shown only when legacy filter is on.
 //
-// This file is refreshed automatically every Wednesday by scripts/scrape.mjs.
-// Add new lifters by hand; the scraper only updates lifters already listed.
+// This file is written automatically every day by scripts/scrape.mjs. Once
+// Supabase is connected, the roster (who's on the board, names, Instagram,
+// legacy) comes from the admin screen, and hand edits to it here are replaced.
 
 const LIFTERS = [
   // ── ACTIVE MEMBERS ──────────────────────────────────────────
