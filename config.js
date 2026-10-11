@@ -10,7 +10,7 @@
 // admin screens promise "a few minutes" rather than "the next daily refresh".
 
 const SUPABASE_CONFIG = {
-  url: "",
-  key: "",
+  url: "https://eiduzzcpuytnxcljryye.supabase.co",
+  key: "sb_publishable_ZzRRph1zAgu20jiMBvLTWQ_no1rmFLZ",
   instantSync: false,
 };
