@@ -1,7 +1,7 @@
 -- Implexus Powerlifting — competitions
 -- Run once in the Supabase SQL Editor, after setup.sql (safe to re-run).
 --
--- public.competitions          a meet: federation + date
+-- public.competitions          a meet: name, federation, venue and date
 -- public.competition_entries   who's lifting in it: a lifter from the roster
 --                              (lifter_id) or someone who isn't on the board
 --                              (just a name). The name is always stored, so if
@@ -27,6 +27,17 @@ create table if not exists public.competition_entries (
   position        int not null default 0
 );
 
+-- Name and venue (added after the first version; safe on existing tables).
+-- Name is required by the admin functions; venue is optional.
+alter table public.competitions add column if not exists name text;
+alter table public.competitions add column if not exists venue text;
+alter table public.competitions drop constraint if exists competitions_name_len;
+alter table public.competitions add constraint competitions_name_len
+  check (name is null or char_length(btrim(name)) between 1 and 100);
+alter table public.competitions drop constraint if exists competitions_venue_len;
+alter table public.competitions add constraint competitions_venue_len
+  check (venue is null or char_length(btrim(venue)) between 1 and 100);
+
 create index if not exists competition_entries_competition_idx on public.competition_entries (competition_id);
 create unique index if not exists competition_entries_lifter_once
   on public.competition_entries (competition_id, lifter_id) where lifter_id is not null;
@@ -45,11 +56,15 @@ create policy "Anyone can read competition entries"
 revoke insert, update, delete, truncate on public.competitions from anon, authenticated;
 revoke insert, update, delete, truncate on public.competition_entries from anon, authenticated;
 
+-- The first version took no name or venue; replace it rather than overload it
+drop function if exists public.admin_save_competition(text, bigint, text, date, jsonb);
+
 -- Create (p_id null) or update a competition and replace its lifters in one go.
 -- p_entries: [{"lifter_id": 12}, {"name": "Someone New"}, ...] in display order.
 -- Roster lifters' names are taken from the roster, not from the request.
 create or replace function public.admin_save_competition(
-  pin text, p_id bigint, p_fed text, p_date date, p_entries jsonb default '[]'::jsonb
+  pin text, p_id bigint, p_name text, p_fed text, p_venue text, p_date date,
+  p_entries jsonb default '[]'::jsonb
 )
 returns jsonb
 language plpgsql
@@ -67,16 +82,20 @@ begin
   if err is not null then
     return jsonb_build_object('ok', false, 'error', err);
   end if;
-  if p_entries is null or jsonb_typeof(p_entries) <> 'array' or jsonb_array_length(p_entries) > 200 then
+  if nullif(btrim(p_name), '') is null
+     or p_entries is null or jsonb_typeof(p_entries) <> 'array' or jsonb_array_length(p_entries) > 200 then
     return jsonb_build_object('ok', false, 'error', 'invalid');
   end if;
 
   begin
     if comp_id is null then
-      insert into public.competitions (fed, date) values (btrim(p_fed), p_date)
+      insert into public.competitions (name, fed, venue, date)
+      values (btrim(p_name), btrim(p_fed), nullif(btrim(p_venue), ''), p_date)
       returning id into comp_id;
     else
-      update public.competitions set fed = btrim(p_fed), date = p_date, updated_at = now()
+      update public.competitions
+         set name = btrim(p_name), fed = btrim(p_fed), venue = nullif(btrim(p_venue), ''),
+             date = p_date, updated_at = now()
        where id = comp_id;
       if not found then
         return jsonb_build_object('ok', false, 'error', 'not_found');
@@ -129,9 +148,9 @@ begin
 end;
 $$;
 
-revoke all on function public.admin_save_competition(text, bigint, text, date, jsonb) from public;
+revoke all on function public.admin_save_competition(text, bigint, text, text, text, date, jsonb) from public;
 revoke all on function public.admin_remove_competition(text, bigint) from public;
-grant execute on function public.admin_save_competition(text, bigint, text, date, jsonb) to anon, authenticated;
+grant execute on function public.admin_save_competition(text, bigint, text, text, text, date, jsonb) to anon, authenticated;
 grant execute on function public.admin_remove_competition(text, bigint) to anon, authenticated;
 
 -- Keep a lifter's name on their entries in step with roster renames

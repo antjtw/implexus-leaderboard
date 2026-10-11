@@ -626,8 +626,8 @@ html::after {
 .dyn-page-wrap { padding-top: 7vh; }
 
 /* ── Chrome glints ────────────────────────────────────────── */
-.dyn-comp-fed-wrap::before,
-.dyn-comp-fed-wrap::after,
+.dyn-comp-title-wrap::before,
+.dyn-comp-title-wrap::after,
 .dyn-vs::before {
   content: '';
   position: absolute;
@@ -642,8 +642,8 @@ html::after {
   pointer-events: none;
   animation: glint 2.8s ease-in-out infinite;
 }
-.dyn-comp-fed-wrap::before { top: 2%; right: 6%; animation-delay: 1s; }
-.dyn-comp-fed-wrap::after  { bottom: 12%; left: 4%; width: clamp(12px, 1.5vw, 28px); animation-delay: 2.2s; }
+.dyn-comp-title-wrap::before { top: 0; right: 2%; animation-delay: 1s; }
+.dyn-comp-title-wrap::after  { bottom: 8%; left: 1%; width: clamp(12px, 1.5vw, 28px); animation-delay: 2.2s; }
 .dyn-vs { position: relative; }
 .dyn-vs::before { top: -10%; right: -8%; animation-delay: 1.4s; }
 @keyframes glint {
@@ -670,7 +670,7 @@ html::after {
   pointer-events: none;
 }
 .dyn-comp-label { animation: rivalryLabelIn 0.5s ease both, glitch 6s linear 1.5s infinite; }
-.dyn-comp-fed {
+.dyn-comp-title {
   font-style: italic;
   font-weight: 900;
   padding: 0 0.1em;
@@ -701,13 +701,21 @@ html::after {
   animation: neonBreath 2.4s ease-in-out 1s infinite;
 }
 .dyn-comp-unit { font-family: var(--rt-ui); color: rgba(255, 255, 255, 0.75); }
-.dyn-comp-date {
+.dyn-comp-meta {
   font-family: var(--rt-ui);
   font-weight: 600;
   color: #fff;
   text-shadow: var(--rt-outline);
   animation: fadeUp 0.5s ease 0.45s both;
 }
+.dyn-comp-fedtag {
+  color: var(--rt-cyan);
+  background: rgba(92, 225, 230, 0.1);
+  border-color: rgba(92, 225, 230, 0.5);
+  box-shadow: 0 0 12px rgba(92, 225, 230, 0.3);
+  text-shadow: 0 0 8px rgba(92, 225, 230, 0.6);
+}
+.dyn-comp-venue { color: rgba(255, 255, 255, 0.85); }
 .dyn-comp-count {
   font-family: var(--rt-ui);
   font-weight: 700;
@@ -903,8 +911,8 @@ html::after {
 @media (prefers-reduced-motion: reduce) {
   html::before, html::after,
   #dynamic-overlay, #dynamic-overlay::after,
-  .dyn-rivalry-label, .dyn-comp-label, .dyn-comp::before, .dyn-comp-fed,
-  .dyn-comp-countdown, .dyn-comp-days, .dyn-comp-date, .dyn-comp-count,
+  .dyn-rivalry-label, .dyn-comp-label, .dyn-comp::before, .dyn-comp-title,
+  .dyn-comp-countdown, .dyn-comp-days, .dyn-comp-meta, .dyn-comp-count,
   .dyn-comp-lifter, .dyn-exit-hint::after, .dyn-osd,
-  .dyn-comp-fed-wrap::before, .dyn-comp-fed-wrap::after, .dyn-vs::before { animation: none !important; }
+  .dyn-comp-title-wrap::before, .dyn-comp-title-wrap::after, .dyn-vs::before { animation: none !important; }
 }

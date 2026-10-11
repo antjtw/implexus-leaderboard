@@ -476,8 +476,9 @@
           return `
           <button type="button" class="lifter-item comp-item${done ? " is-past" : ""}" data-action="comp-edit" data-id="${c.id}">
             <span class="lifter-main">
-              <span class="lifter-name">${esc(c.fed)}</span>
-              <span class="lifter-slug">${shortDate(c.date)} · ${n} ${n === 1 ? "lifter" : "lifters"}</span>
+              <span class="lifter-name">${esc(c.name || c.fed)}</span>
+              <span class="lifter-slug">${esc([c.name ? c.fed : null, shortDate(c.date), c.venue].filter(Boolean).join(" · "))}</span>
+              <span class="lifter-slug">${n} ${n === 1 ? "lifter" : "lifters"}</span>
             </span>
             <span class="lifter-tags"><span class="tag${done ? "" : " tag-pending"}">${whenText(c.date)}</span></span>
             <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -503,10 +504,19 @@
       body.innerHTML = `
         <form class="admin-panel admin-form comp-form" novalidate${existing ? ` data-id="${existing.id}"` : ""}>
           <div class="field">
+            <label for="c-name">Competition name</label>
+            <input id="c-name" name="name" type="text" value="${esc(existing ? existing.name || "" : "")}" autocomplete="off" spellcheck="false" maxlength="100" placeholder="e.g. British Classic Championships" data-autofocus />
+            <p class="field-error" id="c-name-err"></p>
+          </div>
+          <div class="field">
             <label for="c-fed">Federation</label>
-            <input id="c-fed" name="fed" type="text" list="c-fed-list" value="${esc(existing ? existing.fed : "")}" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="60" placeholder="e.g. BPU" data-autofocus />
+            <input id="c-fed" name="fed" type="text" list="c-fed-list" value="${esc(existing ? existing.fed : "")}" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="60" placeholder="e.g. BPU" />
             <datalist id="c-fed-list">${feds.map(f => `<option value="${esc(f)}"></option>`).join("")}</datalist>
             <p class="field-error" id="c-fed-err"></p>
+          </div>
+          <div class="field">
+            <label for="c-venue">Venue <span class="optional">(optional)</span></label>
+            <input id="c-venue" name="venue" type="text" value="${esc(existing ? existing.venue || "" : "")}" autocomplete="off" spellcheck="false" maxlength="100" placeholder="e.g. Ponds Forge, Sheffield" />
           </div>
           <div class="field">
             <label for="c-date">Date</label>
@@ -562,7 +572,9 @@
       form.querySelector("#c-guest").addEventListener("keydown", e => {
         if (e.key === "Enter") { e.preventDefault(); addGuestEntry(); }
       });
-      const fed = form.querySelector("#c-fed"), date = form.querySelector("#c-date");
+      const nameIn = form.querySelector("#c-name"), fed = form.querySelector("#c-fed");
+      const venue = form.querySelector("#c-venue"), date = form.querySelector("#c-date");
+      nameIn.addEventListener("input", () => setFieldError(form, nameIn, ""));
       fed.addEventListener("input", () => setFieldError(form, fed, ""));
       date.addEventListener("input", () => setFieldError(form, date, ""));
 
@@ -571,9 +583,12 @@
         const formError = form.querySelector(".form-error");
         const submitBtn = form.querySelector('[type="submit"]');
         formError.textContent = "";
-        const fedVal = fed.value.trim().replace(/\s+/g, " ");
+        const tidy = v => v.trim().replace(/\s+/g, " ");
+        const nameVal = tidy(nameIn.value), fedVal = tidy(fed.value), venueVal = tidy(venue.value);
+        nameIn.value = nameVal; fed.value = fedVal; venue.value = venueVal;
         const dateVal = date.value;
         const errors = [
+          [nameIn, nameVal ? "" : "Enter the competition's name."],
           [fed, fedVal ? "" : "Enter the federation, like BPU."],
           [date, /^\d{4}-\d{2}-\d{2}$/.test(dateVal) ? "" : "Pick the date of the competition."],
         ];
@@ -585,14 +600,14 @@
         submitBtn.classList.add("is-busy");
         try {
           await call("admin_save_competition", {
-            p_id: draft.id, p_fed: fedVal, p_date: dateVal,
+            p_id: draft.id, p_name: nameVal, p_fed: fedVal, p_venue: venueVal || null, p_date: dateVal,
             p_entries: draft.entries.map(en => en.lifter_id != null ? { lifter_id: en.lifter_id } : { name: en.name }),
           });
           await refreshComps().catch(() => {});
           show("comps");
           toast(daysFromToday(dateVal) >= 0
-            ? `Saved ${fedVal}, ${shortDate(dateVal)}. It'll show on the TV after the rivalries.`
-            : `Saved ${fedVal}. That date has passed, so it won't show on the TV.`);
+            ? `Saved ${nameVal}. It'll show on the TV after the rivalries.`
+            : `Saved ${nameVal}. That date has passed, so it won't show on the TV.`);
         } catch (err) {
           if (err.handled) return;
           formError.textContent = err.message || NETWORK_ERROR;
@@ -900,7 +915,7 @@
     const comp = comps.find(c => c.id === draft.id);
     if (!comp) return;
     openConfirm({
-      title: `Remove ${comp.fed}, ${shortDate(comp.date)}?`,
+      title: `Remove ${comp.name || comp.fed}?`,
       desc: "The competition and its line-up will be deleted and won't show on the TV. Lifters stay on the leaderboard.",
       yesLabel: "Yes, remove",
       noLabel: "No, keep it",
@@ -909,7 +924,7 @@
         await call("admin_remove_competition", { p_id: comp.id });
         await refreshComps().catch(() => {});
         show("comps");
-        toast(`Removed ${comp.fed}, ${shortDate(comp.date)}.`);
+        toast(`Removed ${comp.name || comp.fed}.`);
       },
     });
   }

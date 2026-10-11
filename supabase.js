@@ -37,12 +37,12 @@ const ImplexusDB = (function () {
   }
 
   // Competitions with their lifters, soonest first:
-  // [{id, fed, date: "YYYY-MM-DD", competition_entries: [{id, name, lifter_id, position}]}]
+  // [{id, name, fed, venue, date: "YYYY-MM-DD", competition_entries: [{id, name, lifter_id, position}]}]
   // fromDate ("YYYY-MM-DD") limits it to meets on or after that day.
   async function listCompetitions(fromDate, timeoutMs) {
     const since = fromDate ? `&date=gte.${encodeURIComponent(fromDate)}` : "";
     const rows = await request(
-      "competitions?select=id,fed,date,competition_entries(id,name,lifter_id,position)" +
+      "competitions?select=id,name,fed,venue,date,competition_entries(id,name,lifter_id,position)" +
       `${since}&order=date.asc,id.asc&competition_entries.order=position.asc`,
       { headers: headers() }, timeoutMs);
     if (!Array.isArray(rows)) throw new Error("Unexpected response from the database");

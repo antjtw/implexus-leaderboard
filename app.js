@@ -822,10 +822,16 @@
       <div class="dyn-comp">
         <div class="dyn-comp-label">Upcoming competition</div>
         <div class="dyn-comp-head">
-          <div class="dyn-comp-fed-wrap"><div class="dyn-comp-fed">${esc(comp.fed)}</div></div>
+          <div class="dyn-comp-titles">
+            <div class="dyn-comp-title-wrap"><div class="dyn-comp-title">${esc(comp.name || comp.fed)}</div></div>
+            <div class="dyn-comp-meta">
+              ${comp.name ? `<span class="dyn-comp-fedtag">${esc(comp.fed)}</span>` : ""}
+              <span class="dyn-comp-date">${compDateText(comp.date)}</span>
+              ${comp.venue ? `<span class="dyn-comp-venue">${esc(comp.venue)}</span>` : ""}
+            </div>
+          </div>
           <div class="dyn-comp-countdown">${countdown}${prepBar}</div>
         </div>
-        <div class="dyn-comp-date">${compDateText(comp.date)}</div>
         ${entries.length ? `<div class="dyn-comp-count">${entries.length} lifting</div>` : ""}
         <div class="dyn-comp-lifters${many ? " dyn-comp-lifters-many" : ""}">${lifters}</div>
       </div>

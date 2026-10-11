@@ -1652,16 +1652,44 @@ body.admin-open { overflow: hidden; }
   text-transform: uppercase;
   color: var(--accent);
 }
-.dyn-comp-head { display: flex; align-items: center; justify-content: center; gap: 4vw; flex-wrap: wrap; }
-.dyn-comp-fed {
+.dyn-comp-head { display: flex; align-items: center; justify-content: center; gap: 4vw; width: 100%; }
+.dyn-comp-titles { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 1.6vh; text-align: left; }
+.dyn-comp-title {
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 900;
-  font-size: clamp(48px, 9vw, 160px);
-  line-height: 0.95;
+  font-size: clamp(36px, 5.4vw, 100px);
+  line-height: 0.98;
   color: #fff;
+  text-wrap: balance;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.dyn-comp-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em 1.1em;
+  font-size: clamp(15px, 1.8vw, 28px);
+  font-weight: 500;
+  color: rgba(255,255,255,0.8);
+}
+.dyn-comp-venue::before { content: '📍'; margin-right: 0.35em; font-size: 0.85em; }
+.dyn-comp-fedtag {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+  border: 1px solid currentColor;
 }
 .dyn-comp-countdown { display: flex; flex-direction: column; align-items: center; line-height: 1; }
-.dyn-comp-fed-wrap { position: relative; }
+.dyn-comp-title-wrap { position: relative; max-width: 100%; }
+@media (orientation: portrait) {
+  .dyn-comp-head { flex-direction: column; }
+  .dyn-comp-titles { align-items: center; text-align: center; }
+  .dyn-comp-meta { justify-content: center; }
+}
 .dyn-comp-prep { display: flex; align-items: center; gap: 0.6em; margin-top: 1.2vh; }
 .dyn-comp-prep-label { font-size: clamp(10px, 1vw, 15px); font-weight: 700; letter-spacing: 0.2em; color: rgba(255,255,255,0.6); }
 .dyn-comp-prep-bar { display: flex; gap: 3px; }
@@ -1675,7 +1703,6 @@ body.admin-open { overflow: hidden; }
 }
 .dyn-comp-days-word { font-size: clamp(36px, 5.5vw, 96px); }
 .dyn-comp-unit { font-size: clamp(12px, 1.4vw, 20px); font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
-.dyn-comp-date { font-size: clamp(16px, 2vw, 30px); font-weight: 500; color: rgba(255,255,255,0.75); }
 .dyn-comp-count { font-size: clamp(11px, 1.2vw, 16px); letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
 .dyn-comp-lifters {
   display: flex;
