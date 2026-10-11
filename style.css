@@ -1616,6 +1616,24 @@ body.admin-open { overflow: hidden; }
 .picker > .btn-ghost { width: 100%; margin-top: 10px; }
 .comp-item.is-past { opacity: 0.55; }
 
+/* ── On-screen display (TV): channel + slide top left, clock top right ── */
+.dyn-osd {
+  position: absolute;
+  top: 2.4vh;
+  left: 3vw;
+  right: 3vw;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  font-size: clamp(14px, 1.6vw, 24px);
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.6);
+  z-index: 2;
+}
+.dyn-osd-left, .dyn-osd-right { display: flex; flex-direction: column; gap: 0.2em; }
+.dyn-osd-right { text-align: right; }
+.dyn-page-indicator { visibility: hidden; }   /* the OSD shows the page now */
+
 /* ── Upcoming competition slide (TV) ─────────────────────── */
 .dyn-comp {
   flex: 1;
@@ -1643,6 +1661,12 @@ body.admin-open { overflow: hidden; }
   color: #fff;
 }
 .dyn-comp-countdown { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.dyn-comp-fed-wrap { position: relative; }
+.dyn-comp-prep { display: flex; align-items: center; gap: 0.6em; margin-top: 1.2vh; }
+.dyn-comp-prep-label { font-size: clamp(10px, 1vw, 15px); font-weight: 700; letter-spacing: 0.2em; color: rgba(255,255,255,0.6); }
+.dyn-comp-prep-bar { display: flex; gap: 3px; }
+.dyn-comp-prep-bar i { width: clamp(6px, 0.6vw, 10px); height: clamp(12px, 1.4vh, 18px); background: rgba(255,255,255,0.15); }
+.dyn-comp-prep-bar i.on { background: var(--gold); }
 .dyn-comp-days {
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 900;

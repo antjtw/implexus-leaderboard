@@ -512,12 +512,35 @@
   // Persistent overlay footer: last-updated (bottom-left) + exit hint
   // (bottom-right). Included in every slide's markup so it survives the
   // innerHTML swaps, and excluded from the cross-slide fade.
-  function dynFooterHTML() {
+  function dynFooterHTML(label) {
     const updated = lastUpdatedText();
     return `
+      <div class="dyn-osd" aria-hidden="true">
+        <div class="dyn-osd-left"><span>CH 9B</span><span class="dyn-osd-label">${label || ""}</span></div>
+        <div class="dyn-osd-right">${osdClockHTML()}</div>
+      </div>
       ${updated ? `<div class="dyn-updated">${updated}</div>` : ""}
       <div class="dyn-exit-hint">tap to exit</div>`;
   }
+
+  // VHS-style on-screen display clock, in UK time: "OCT 10 2026" / "PM 4:58"
+  function osdClockHTML() {
+    const parts = {};
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/London", day: "2-digit", month: "short", year: "numeric",
+      hour: "numeric", minute: "2-digit", hour12: true,
+    }).formatToParts(new Date()).forEach(p => { parts[p.type] = p.value; });
+    const ampm = (parts.dayPeriod || "").toUpperCase().replace(/\./g, "");
+    return `<span>${(parts.month || "").toUpperCase()} ${parts.day} ${parts.year}</span>` +
+           `<span>${ampm} ${parts.hour}:${parts.minute}</span>`;
+  }
+
+  // Keep the OSD clock ticking while the TV is showing
+  setInterval(() => {
+    if (!overlay) return;
+    const el = overlay.querySelector(".dyn-osd-right");
+    if (el) el.innerHTML = osdClockHTML();
+  }, 15000);
 
   function renderSlide() {
     // When we've run through the current cycle, build a fresh randomised one
@@ -609,7 +632,7 @@
         </div>
         ${captionHTML}
       </div>
-      ${dynFooterHTML()}
+      ${dynFooterHTML(`RANKINGS ${pageIndex + 1}/${pageCount}`)}
     `;
 
     // Cascade each row in from the side
@@ -706,7 +729,7 @@
           </div>
         </div>`}
       </div>
-      ${dynFooterHTML()}
+      ${dynFooterHTML(joke ? "GRUDGE MATCH" : "RIVALRY")}
     `;
 
     // Animate gap bar in
@@ -749,7 +772,7 @@
         <div class="dyn-pb-lines">${rows}</div>
         ${placesUp}
       </div>
-      ${dynFooterHTML()}
+      ${dynFooterHTML("NEW PB")}
     `;
 
     holdTimeout = setTimeout(nextSlide, CONFIG.rivalry_hold_ms);
@@ -778,6 +801,14 @@
       return { name: onBoard ? onBoard.name : e.name, dots: onBoard ? onBoard.dots : null };
     }).sort((a, b) => (b.dots ?? -1) - (a.dots ?? -1));
 
+    // A 10-segment "prep" bar over an 8-week build: fuller as the day nears
+    const filled = Math.max(1, Math.min(10, Math.round(10 * (1 - days / 56))));
+    const prepBar = `
+      <div class="dyn-comp-prep" aria-hidden="true">
+        <span class="dyn-comp-prep-label">PREP</span>
+        <span class="dyn-comp-prep-bar">${'<i class="on"></i>'.repeat(filled)}${"<i></i>".repeat(10 - filled)}</span>
+      </div>`;
+
     const many = entries.length > 8;
     const lifters = entries.length
       ? entries.map((e, i) => `
@@ -791,14 +822,14 @@
       <div class="dyn-comp">
         <div class="dyn-comp-label">Upcoming competition</div>
         <div class="dyn-comp-head">
-          <div class="dyn-comp-fed">${esc(comp.fed)}</div>
-          <div class="dyn-comp-countdown">${countdown}</div>
+          <div class="dyn-comp-fed-wrap"><div class="dyn-comp-fed">${esc(comp.fed)}</div></div>
+          <div class="dyn-comp-countdown">${countdown}${prepBar}</div>
         </div>
         <div class="dyn-comp-date">${compDateText(comp.date)}</div>
         ${entries.length ? `<div class="dyn-comp-count">${entries.length} lifting</div>` : ""}
         <div class="dyn-comp-lifters${many ? " dyn-comp-lifters-many" : ""}">${lifters}</div>
       </div>
-      ${dynFooterHTML()}
+      ${dynFooterHTML("NEXT MEET")}
     `;
 
     holdTimeout = setTimeout(nextSlide, CONFIG.comp_hold_ms);

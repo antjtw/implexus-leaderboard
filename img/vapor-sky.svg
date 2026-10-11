@@ -34,6 +34,13 @@
     <circle cx="1450" cy="50" r="1.3"/><circle cx="1530" cy="210" r="1"/><circle cx="60" cy="260" r="1.1"/>
   </g>
 
+  <!-- neon outline triangles behind the sun, slightly out of register -->
+  <g fill="none" stroke-linejoin="round" filter="url(#lineglow)">
+    <polygon points="800,70 1110,600 490,600" stroke="#ffe66d" stroke-width="4" opacity="0.8" transform="rotate(-7 800 420)"/>
+    <polygon points="800,70 1110,600 490,600" stroke="#ff6ad5" stroke-width="4" opacity="0.9" transform="rotate(-3.5 800 420)"/>
+    <polygon points="800,70 1110,600 490,600" stroke="#8a5cff" stroke-width="5"/>
+  </g>
+
   <!-- sun: soft glow, then the striped disc sitting on the horizon -->
   <circle cx="800" cy="600" r="250" fill="#ff6ad5" opacity="0.45" filter="url(#glow)"/>
   <circle cx="800" cy="600" r="225" fill="url(#sun)" mask="url(#stripes)"/>
