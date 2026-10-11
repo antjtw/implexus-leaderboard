@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600" preserveAspectRatio="xMidYMax slice">
+  <!-- Vaporwave sky decorations: stars, light streaks, chrome spheres, palms.
+       Bottom edge sits on the horizon; the sky colour itself comes from CSS. -->
+  <defs>
+    <radialGradient id="chrome" cx="0.5" cy="0.5" r="0.5" fx="0.34" fy="0.3">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.18" stop-color="#e8dcff"/>
+      <stop offset="0.5" stop-color="#9a78d6"/>
+      <stop offset="0.78" stop-color="#3a1a6e"/>
+      <stop offset="0.92" stop-color="#5ce1e6"/>
+      <stop offset="1" stop-color="#1b0b3a"/>
+    </radialGradient>
+    <linearGradient id="streakCyan" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5ce1e6" stop-opacity="0"/>
+      <stop offset="0.7" stop-color="#5ce1e6" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#e8ffff" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="streakPink" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff6ad5" stop-opacity="0"/>
+      <stop offset="0.7" stop-color="#ff6ad5" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#ffe0f6" stop-opacity="1"/>
+    </linearGradient>
+    <g id="leaf"><path d="M0 0 C34 -30 86 -32 128 8 C86 -14 40 -12 0 0 Z"/></g>
+    <g id="palm">
+      <path d="M-7 0 C4 90 14 180 6 300 L24 300 C30 180 18 90 7 0 Z"/>
+      <use href="#leaf" transform="rotate(-8)"/>
+      <use href="#leaf" transform="rotate(-42) scale(0.92)"/>
+      <use href="#leaf" transform="rotate(-78) scale(0.7)"/>
+      <use href="#leaf" transform="rotate(22) scale(0.8)"/>
+      <g transform="scale(-1 1)">
+        <use href="#leaf" transform="rotate(-4) scale(0.95)"/>
+        <use href="#leaf" transform="rotate(-40) scale(0.88)"/>
+        <use href="#leaf" transform="rotate(-76) scale(0.66)"/>
+        <use href="#leaf" transform="rotate(26) scale(0.75)"/>
+      </g>
+    </g>
+  </defs>
+
+  <!-- stars -->
+  <g fill="#fff" opacity="0.7">
+    <circle cx="120" cy="60" r="1.6"/><circle cx="260" cy="140" r="1.2"/><circle cx="420" cy="40" r="1.4"/>
+    <circle cx="560" cy="190" r="1"/><circle cx="700" cy="90" r="1.5"/><circle cx="880" cy="30" r="1.2"/>
+    <circle cx="1010" cy="170" r="1.4"/><circle cx="1150" cy="70" r="1.1"/><circle cx="1290" cy="150" r="1.6"/>
+    <circle cx="1450" cy="50" r="1.3"/><circle cx="1530" cy="210" r="1"/><circle cx="60" cy="260" r="1.1"/>
+    <circle cx="350" cy="300" r="1"/><circle cx="1220" cy="290" r="1.2"/><circle cx="980" cy="330" r="0.9"/>
+  </g>
+
+  <!-- light streaks -->
+  <g stroke-linecap="round">
+    <line x1="140" y1="20" x2="330" y2="190" stroke="url(#streakCyan)" stroke-width="7"/>
+    <line x1="360" y1="250" x2="470" y2="330" stroke="url(#streakCyan)" stroke-width="5" opacity="0.7"/>
+    <line x1="1480" y1="110" x2="1230" y2="300" stroke="url(#streakPink)" stroke-width="9"/>
+    <line x1="1180" y1="40" x2="1080" y2="120" stroke="url(#streakPink)" stroke-width="4" opacity="0.7"/>
+    <line x1="760" y1="0" x2="840" y2="70" stroke="url(#streakCyan)" stroke-width="3" opacity="0.6"/>
+  </g>
+
+  <!-- chrome spheres -->
+  <circle cx="1290" cy="330" r="26" fill="url(#chrome)"/>
+  <circle cx="1400" cy="480" r="34" fill="url(#chrome)"/>
+  <circle cx="300" cy="420" r="14" fill="url(#chrome)" opacity="0.9"/>
+
+  <!-- palms on the horizon -->
+  <g fill="#1d0a3d">
+    <use href="#palm" transform="translate(150 330) scale(0.9)"/>
+    <use href="#palm" transform="translate(255 410) scale(0.62) rotate(4)"/>
+    <use href="#palm" transform="translate(1460 350) scale(-0.85 0.85)"/>
+    <use href="#palm" transform="translate(1540 430) scale(-0.55 0.55)"/>
+  </g>
+</svg>
