@@ -3,6 +3,8 @@
 // 6-digit code (checked by Supabase, never stored in this file):
 //   Dashboard  →  Add a lifter  →  Added (add another / dashboard / exit)
 //              →  Edit lifters  →  Edit lifter (save / cancel / remove → confirm)
+//              →  Competitions  →  Add / edit competition (fed, date, lifters;
+//                                  save / cancel / remove → confirm)
 
 (function () {
 
@@ -13,6 +15,8 @@
   let root = null;        // the panel
   let pin = null;         // the code, kept in memory only while admin is open
   let roster = [];        // [{id, name, slug, ig, legacy, ...}] from Supabase
+  let comps = [];         // [{id, fed, date, competition_entries: [...]}] from Supabase
+  let confirmCfg = null;  // what the open "are you sure?" modal does on Yes
   let view = null;        // current view name
   let lastFocus = null;   // element to return focus to when the panel closes
 
@@ -62,7 +66,8 @@
     no_pin: "No admin code has been set up yet.",
     duplicate: "That OpenPowerlifting profile is already on the leaderboard.",
     invalid: "Something in the form isn't valid. Check the details and try again.",
-    not_found: "That lifter has already been removed.",
+    not_found: "That's already been removed.",
+    duplicate_entry: "Someone is in that competition twice. Remove the extra one and try again.",
   };
   const NETWORK_ERROR = "Couldn't reach the database. Check your connection and try again.";
 
@@ -85,6 +90,33 @@
     roster = await ImplexusDB.listLifters();
     if (window.ImplexusBoard) window.ImplexusBoard.applyRoster(roster);
     return roster;
+  }
+
+  async function refreshComps() {
+    comps = await ImplexusDB.listCompetitions();
+    if (window.ImplexusBoard) window.ImplexusBoard.applyCompetitions(comps);
+    return comps;
+  }
+
+  // Dates: "YYYY-MM-DD" in, UK-style text out
+  function ukToday() {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" }).format(new Date());
+  }
+  function daysFromToday(dateStr) {
+    const toUTC = d => { const [y, m, dd] = d.split("-").map(Number); return Date.UTC(y, m - 1, dd); };
+    return Math.round((toUTC(dateStr) - toUTC(ukToday())) / 86400000);
+  }
+  function shortDate(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", weekday: "short", day: "numeric", month: "short", year: "numeric" })
+      .format(new Date(Date.UTC(y, m - 1, d)));
+  }
+  function whenText(dateStr) {
+    const n = daysFromToday(dateStr);
+    if (n < 0) return "Finished";
+    if (n === 0) return "Today";
+    if (n === 1) return "Tomorrow";
+    return `In ${n} days`;
   }
 
   // ── Open / close ──────────────────────────────────────────────
@@ -147,9 +179,18 @@
       case "edit": show("edit", { id: Number(el.dataset.id) }); break;
       case "key": pressKey(el.dataset.key); break;
       case "switch": toggleSwitch(el); break;
-      case "ask-remove": openConfirm(); break;
+      case "ask-remove": askRemoveLifter(); break;
       case "confirm-no": closeConfirm(); break;
-      case "confirm-yes": removeLifter(); break;
+      case "confirm-yes": runConfirm(); break;
+      case "comps": show("comps"); break;
+      case "comp-new": show("compForm"); break;
+      case "comp-edit": show("compForm", { id: Number(el.dataset.id) }); break;
+      case "ask-remove-comp": askRemoveComp(); break;
+      case "picker-open": togglePicker(true); break;
+      case "picker-close": togglePicker(false); break;
+      case "entry-add-lifter": addEntry({ lifter_id: Number(el.dataset.id) }); break;
+      case "entry-add-guest": addGuestEntry(); break;
+      case "entry-remove": removeEntry(Number(el.dataset.index)); break;
     }
   }
 
@@ -166,7 +207,8 @@
   }
 
   function goBack() {
-    if (view === "add" || view === "list") show("dashboard");
+    if (view === "add" || view === "list" || view === "comps") show("dashboard");
+    else if (view === "compForm") show("comps");
     else if (view === "edit") show("list");
     else if (view === "added") show("dashboard");
     else close();
@@ -181,12 +223,15 @@
     added: "Lifter added",
     list: "Edit lifters",
     edit: "Edit lifter",
+    comps: "Competitions",
+    compForm: "Competition",
   };
-  const HAS_BACK = new Set(["add", "list", "edit"]);
+  const HAS_BACK = new Set(["add", "list", "edit", "comps", "compForm"]);
 
   function show(name, opts = {}) {
     view = name;
-    root.querySelector("#admin-title").textContent = TITLES[name];
+    root.querySelector("#admin-title").textContent =
+      name === "compForm" ? (opts.id ? "Edit competition" : "Add a competition") : TITLES[name];
     root.querySelector('[data-action="back"]').hidden = !HAS_BACK.has(name);
     const body = root.querySelector("#admin-body");
     body.scrollTop = 0;
@@ -261,6 +306,15 @@
                 <span class="menu-sub" id="admin-count">${roster.length ? `${roster.length} lifters, ${active} current` : "Rename, change legacy or remove"}</span>
               </span>
             </button>
+            <button type="button" class="menu-card" data-action="comps">
+              <span class="menu-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M7 4h10v4a5 5 0 0 1-10 0V4zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 13v4M8 20h8M9.5 17h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span class="menu-text">
+                <span class="menu-title">Competitions</span>
+                <span class="menu-sub" id="admin-comp-count">Add meets and who's lifting</span>
+              </span>
+            </button>
           </div>
           <div class="admin-actions">
             <button type="button" class="btn btn-ghost" data-action="exit">Exit admin</button>
@@ -271,6 +325,11 @@
         const el = body.querySelector("#admin-count");
         const act = roster.filter(l => !l.legacy).length;
         if (el && view === "dashboard") el.textContent = `${roster.length} lifters, ${act} current`;
+      }).catch(() => {});
+      refreshComps().then(() => {
+        const el = body.querySelector("#admin-comp-count");
+        const upcoming = comps.filter(c => daysFromToday(c.date) >= 0).length;
+        if (el && view === "dashboard") el.textContent = upcoming ? `${upcoming} coming up` : "None coming up. Add one";
       }).catch(() => {});
     },
 
@@ -393,7 +452,238 @@
           : `Saved changes to ${values.name}.`);
       }, lifter.id);
     },
+
+    comps(body) {
+      body.innerHTML = `
+        <div class="admin-panel">
+          <div class="admin-actions admin-actions-top">
+            <button type="button" class="btn btn-primary" data-action="comp-new" data-autofocus>Add a competition</button>
+          </div>
+          <div class="lifter-list comp-list" aria-live="polite"><p class="admin-help">Loading competitions…</p></div>
+        </div>`;
+      const listEl = body.querySelector(".comp-list");
+      const paint = () => {
+        if (!comps.length) {
+          listEl.innerHTML = `<p class="admin-help">No competitions yet. Add one and it'll show on the TV after the rivalries.</p>`;
+          return;
+        }
+        // Upcoming soonest first, then finished ones, most recent first
+        const upcoming = comps.filter(c => daysFromToday(c.date) >= 0);
+        const past = comps.filter(c => daysFromToday(c.date) < 0).reverse();
+        listEl.innerHTML = [...upcoming, ...past].map(c => {
+          const n = (c.competition_entries || []).length;
+          const done = daysFromToday(c.date) < 0;
+          return `
+          <button type="button" class="lifter-item comp-item${done ? " is-past" : ""}" data-action="comp-edit" data-id="${c.id}">
+            <span class="lifter-main">
+              <span class="lifter-name">${esc(c.fed)}</span>
+              <span class="lifter-slug">${shortDate(c.date)} · ${n} ${n === 1 ? "lifter" : "lifters"}</span>
+            </span>
+            <span class="lifter-tags"><span class="tag${done ? "" : " tag-pending"}">${whenText(c.date)}</span></span>
+            <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>`;
+        }).join("");
+      };
+      if (comps.length) paint();
+      Promise.all([refreshComps(), roster.length ? null : refreshRoster()])
+        .then(() => { if (view === "comps") paint(); })
+        .catch(() => { if (view === "comps" && !comps.length) listEl.innerHTML = `<p class="admin-help">${NETWORK_ERROR}</p>`; });
+    },
+
+    compForm(body, { id } = {}) {
+      const existing = id ? comps.find(c => c.id === id) : null;
+      if (id && !existing) { show("comps"); return; }
+      draft = {
+        id: existing ? existing.id : null,
+        entries: existing
+          ? (existing.competition_entries || []).map(e => ({ lifter_id: e.lifter_id, name: e.name }))
+          : [],
+      };
+      const feds = [...new Set(LIFTERS.map(l => l.fed).filter(Boolean))].sort();
+      body.innerHTML = `
+        <form class="admin-panel admin-form comp-form" novalidate${existing ? ` data-id="${existing.id}"` : ""}>
+          <div class="field">
+            <label for="c-fed">Federation</label>
+            <input id="c-fed" name="fed" type="text" list="c-fed-list" value="${esc(existing ? existing.fed : "")}" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="60" placeholder="e.g. BPU" data-autofocus />
+            <datalist id="c-fed-list">${feds.map(f => `<option value="${esc(f)}"></option>`).join("")}</datalist>
+            <p class="field-error" id="c-fed-err"></p>
+          </div>
+          <div class="field">
+            <label for="c-date">Date</label>
+            <input id="c-date" name="date" type="date" value="${existing ? existing.date : ""}" />
+            <p class="field-error" id="c-date-err"></p>
+          </div>
+
+          <div class="field">
+            <span class="field-heading" id="c-lifters-heading">Lifters</span>
+            <div class="entry-list" aria-live="polite"></div>
+            <button type="button" class="btn btn-secondary btn-add-entry" data-action="picker-open">Add lifter</button>
+            <div class="picker" hidden>
+              <label class="search">
+                <span class="visually-hidden">Search the roster</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <input type="search" class="picker-search" placeholder="Search the roster" autocomplete="off" />
+              </label>
+              <div class="picker-results"></div>
+              <div class="picker-guest">
+                <label for="c-guest">Not on the board?</label>
+                <div class="picker-guest-row">
+                  <input id="c-guest" type="text" placeholder="Their name" autocomplete="off" autocapitalize="words" spellcheck="false" maxlength="80" />
+                  <button type="button" class="btn btn-secondary" data-action="entry-add-guest">Add</button>
+                </div>
+                <p class="field-hint">They'll show on this competition only, not on the leaderboard.</p>
+              </div>
+              <button type="button" class="btn btn-ghost" data-action="picker-close">Done adding</button>
+            </div>
+          </div>
+
+          <p class="form-error" role="alert"></p>
+          <div class="admin-actions">
+            <button type="submit" class="btn btn-primary">${existing ? "Save changes" : "Save competition"}</button>
+            <button type="button" class="btn btn-secondary" data-action="comps">Cancel</button>
+          </div>
+          ${existing ? `
+          <div class="admin-danger-zone">
+            <button type="button" class="btn btn-danger-ghost" data-action="ask-remove-comp">Remove competition</button>
+          </div>` : ""}
+        </form>`;
+
+      const form = body.querySelector("form");
+      paintEntries();
+      if (!roster.length) refreshRoster().then(paintPicker).catch(() => {});
+      const pickerSearch = form.querySelector(".picker-search");
+      pickerSearch.addEventListener("input", paintPicker);
+      pickerSearch.addEventListener("keydown", e => {
+        if (e.key !== "Enter") return;
+        e.preventDefault(); // add the top match rather than submitting the form
+        const first = form.querySelector(".picker-item");
+        if (first) addEntry({ lifter_id: Number(first.dataset.id) });
+      });
+      form.querySelector("#c-guest").addEventListener("keydown", e => {
+        if (e.key === "Enter") { e.preventDefault(); addGuestEntry(); }
+      });
+      const fed = form.querySelector("#c-fed"), date = form.querySelector("#c-date");
+      fed.addEventListener("input", () => setFieldError(form, fed, ""));
+      date.addEventListener("input", () => setFieldError(form, date, ""));
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formError = form.querySelector(".form-error");
+        const submitBtn = form.querySelector('[type="submit"]');
+        formError.textContent = "";
+        const fedVal = fed.value.trim().replace(/\s+/g, " ");
+        const dateVal = date.value;
+        const errors = [
+          [fed, fedVal ? "" : "Enter the federation, like BPU."],
+          [date, /^\d{4}-\d{2}-\d{2}$/.test(dateVal) ? "" : "Pick the date of the competition."],
+        ];
+        errors.forEach(([input, text]) => setFieldError(form, input, text));
+        const firstBad = errors.find(([, text]) => text);
+        if (firstBad) { firstBad[0].focus(); return; }
+
+        submitBtn.disabled = true;
+        submitBtn.classList.add("is-busy");
+        try {
+          await call("admin_save_competition", {
+            p_id: draft.id, p_fed: fedVal, p_date: dateVal,
+            p_entries: draft.entries.map(en => en.lifter_id != null ? { lifter_id: en.lifter_id } : { name: en.name }),
+          });
+          await refreshComps().catch(() => {});
+          show("comps");
+          toast(daysFromToday(dateVal) >= 0
+            ? `Saved ${fedVal}, ${shortDate(dateVal)}. It'll show on the TV after the rivalries.`
+            : `Saved ${fedVal}. That date has passed, so it won't show on the TV.`);
+        } catch (err) {
+          if (err.handled) return;
+          formError.textContent = err.message || NETWORK_ERROR;
+          submitBtn.disabled = false;
+          submitBtn.classList.remove("is-busy");
+        }
+      });
+    },
   };
+
+  // ── Competition form: lifters ─────────────────────────────────
+  let draft = { id: null, entries: [] };  // the competition being edited
+
+  function setFieldError(form, input, text) {
+    const el = form.querySelector(`#${input.id}-err`);
+    if (el) el.textContent = text || "";
+    input.setAttribute("aria-invalid", text ? "true" : "false");
+  }
+
+  function paintEntries() {
+    const form = root.querySelector(".comp-form");
+    if (!form) return;
+    form.querySelector("#c-lifters-heading").textContent =
+      draft.entries.length ? `Lifters (${draft.entries.length})` : "Lifters";
+    form.querySelector(".entry-list").innerHTML = draft.entries.length
+      ? draft.entries.map((en, i) => {
+          const r = en.lifter_id != null ? roster.find(l => l.id === en.lifter_id) : null;
+          return `
+          <div class="entry">
+            <span class="entry-name">${esc(r ? r.name : en.name)}</span>
+            <span class="tag${r ? "" : " tag-guest"}">${r ? "On the board" : "Not on the board"}</span>
+            <button type="button" class="entry-remove" data-action="entry-remove" data-index="${i}" aria-label="Remove ${esc(r ? r.name : en.name)}">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </button>
+          </div>`;
+        }).join("")
+      : `<p class="admin-help entry-empty">No one yet. Add lifters from the roster, or anyone else by name.</p>`;
+    paintPicker();
+  }
+
+  function paintPicker() {
+    const form = root.querySelector(".comp-form");
+    if (!form) return;
+    const q = form.querySelector(".picker-search").value.trim().toLowerCase();
+    const taken = new Set(draft.entries.map(en => en.lifter_id).filter(x => x != null));
+    const items = roster
+      .filter(l => !taken.has(l.id) && (!q || l.name.toLowerCase().includes(q)))
+      .sort((a, b) => (a.legacy - b.legacy) || a.name.localeCompare(b.name));
+    form.querySelector(".picker-results").innerHTML = items.length
+      ? items.map(l => `
+          <button type="button" class="picker-item" data-action="entry-add-lifter" data-id="${l.id}">
+            <span class="picker-plus" aria-hidden="true">+</span>
+            <span class="entry-name">${esc(l.name)}</span>
+            ${l.legacy ? `<span class="tag">Legacy</span>` : ""}
+          </button>`).join("")
+      : `<p class="admin-help">${roster.length ? (q ? "No one on the roster matches. Add them by name below." : "Everyone on the roster is already in.") : "Loading the roster…"}</p>`;
+  }
+
+  function togglePicker(open) {
+    const form = root.querySelector(".comp-form");
+    if (!form) return;
+    form.querySelector(".picker").hidden = !open;
+    form.querySelector(".btn-add-entry").hidden = open;
+    if (open) { paintPicker(); form.querySelector(".picker-search").focus(); }
+    else form.querySelector(".btn-add-entry").focus();
+  }
+
+  function addEntry(entry) {
+    if (entry.lifter_id != null && draft.entries.some(en => en.lifter_id === entry.lifter_id)) return;
+    draft.entries.push(entry);
+    paintEntries();
+    const search = root.querySelector(".picker-search");
+    if (search) { search.value = ""; paintPicker(); search.focus(); }
+  }
+
+  function addGuestEntry() {
+    const input = root.querySelector("#c-guest");
+    if (!input) return;
+    const name = titleCase(input.value);
+    if (!name) { input.focus(); return; }
+    // Someone typed a name that's on the roster: link them instead
+    const match = roster.find(l => l.name.toLowerCase() === name.toLowerCase());
+    addEntry(match ? { lifter_id: match.id } : { lifter_id: null, name });
+    input.value = "";
+    input.focus();
+  }
+
+  function removeEntry(index) {
+    draft.entries.splice(index, 1);
+    paintEntries();
+  }
 
   // ── Keypad ────────────────────────────────────────────────────
   let pinEntry = "";
@@ -540,24 +830,22 @@
     });
   }
 
-  // ── Remove: confirm modal ─────────────────────────────────────
-  function openConfirm() {
-    const form = root.querySelector(".admin-form[data-id]");
-    const lifter = form && roster.find(l => l.id === Number(form.dataset.id));
-    if (!lifter) return;
+  // ── "Are you sure?" modal ─────────────────────────────────────
+  // cfg: {title, desc, yesLabel, noLabel, returnFocus, onYes: async () => {}}
+  function openConfirm(cfg) {
+    confirmCfg = cfg;
     const modal = document.createElement("div");
     modal.className = "admin-modal";
     modal.innerHTML = `
       <div class="modal-card" role="alertdialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
-        <h3 class="modal-title" id="modal-title">Remove ${esc(lifter.name)}?</h3>
-        <p class="modal-desc" id="modal-desc">They'll be taken off the leaderboard completely, including the legacy view. You can add them again later.</p>
+        <h3 class="modal-title" id="modal-title">${esc(cfg.title)}</h3>
+        <p class="modal-desc" id="modal-desc">${esc(cfg.desc)}</p>
         <p class="form-error" role="alert"></p>
         <div class="admin-actions">
-          <button type="button" class="btn btn-danger" data-action="confirm-yes">Yes, remove</button>
-          <button type="button" class="btn btn-secondary" data-action="confirm-no" data-autofocus>No, keep them</button>
+          <button type="button" class="btn btn-danger" data-action="confirm-yes">${esc(cfg.yesLabel)}</button>
+          <button type="button" class="btn btn-secondary" data-action="confirm-no" data-autofocus>${esc(cfg.noLabel)}</button>
         </div>
       </div>`;
-    modal.dataset.id = lifter.id;
     modal.addEventListener("click", e => { if (e.target === modal) closeConfirm(); });
     root.appendChild(modal);
     modal.querySelector("[data-autofocus]").focus();
@@ -566,30 +854,64 @@
   function closeConfirm() {
     const modal = root.querySelector(".admin-modal");
     if (modal) modal.remove();
-    const btn = root.querySelector('[data-action="ask-remove"]');
+    const btn = confirmCfg && root.querySelector(confirmCfg.returnFocus);
+    confirmCfg = null;
     if (btn) btn.focus();
   }
 
-  async function removeLifter() {
+  async function runConfirm() {
     const modal = root.querySelector(".admin-modal");
-    if (!modal) return;
-    const id = Number(modal.dataset.id);
-    const lifter = roster.find(l => l.id === id);
+    if (!modal || !confirmCfg) return;
     const yes = modal.querySelector('[data-action="confirm-yes"]');
     yes.disabled = true;
     yes.classList.add("is-busy");
     try {
-      await call("admin_remove_lifter", { p_id: id });
+      await confirmCfg.onYes();
       modal.remove();
-      await refreshRoster().catch(() => {});
-      show("list");
-      toast(`Removed ${lifter ? lifter.name : "lifter"} from the leaderboard.`);
+      confirmCfg = null;
     } catch (err) {
-      if (err.handled) { modal.remove(); return; }
+      if (err.handled) { modal.remove(); confirmCfg = null; return; }
       modal.querySelector(".form-error").textContent = err.message || NETWORK_ERROR;
       yes.disabled = false;
       yes.classList.remove("is-busy");
     }
+  }
+
+  function askRemoveLifter() {
+    const form = root.querySelector(".admin-form[data-id]");
+    const lifter = form && roster.find(l => l.id === Number(form.dataset.id));
+    if (!lifter) return;
+    openConfirm({
+      title: `Remove ${lifter.name}?`,
+      desc: "They'll be taken off the leaderboard completely, including the legacy view. You can add them again later.",
+      yesLabel: "Yes, remove",
+      noLabel: "No, keep them",
+      returnFocus: '[data-action="ask-remove"]',
+      onYes: async () => {
+        await call("admin_remove_lifter", { p_id: lifter.id });
+        await refreshRoster().catch(() => {});
+        show("list");
+        toast(`Removed ${lifter.name} from the leaderboard.`);
+      },
+    });
+  }
+
+  function askRemoveComp() {
+    const comp = comps.find(c => c.id === draft.id);
+    if (!comp) return;
+    openConfirm({
+      title: `Remove ${comp.fed}, ${shortDate(comp.date)}?`,
+      desc: "The competition and its line-up will be deleted and won't show on the TV. Lifters stay on the leaderboard.",
+      yesLabel: "Yes, remove",
+      noLabel: "No, keep it",
+      returnFocus: '[data-action="ask-remove-comp"]',
+      onYes: async () => {
+        await call("admin_remove_competition", { p_id: comp.id });
+        await refreshComps().catch(() => {});
+        show("comps");
+        toast(`Removed ${comp.fed}, ${shortDate(comp.date)}.`);
+      },
+    });
   }
 
   // ── Init ──────────────────────────────────────────────────────

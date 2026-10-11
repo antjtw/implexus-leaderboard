@@ -11,6 +11,8 @@
     page_fade_ms:       400,     // fade-out of the previous page
     cascade_stagger_ms: 60,      // delay between each row cascading in
     rivalry_hold_ms:    9000,    // how long each rivalry card holds
+    comp_hold_ms:       13000,   // how long an upcoming-competition card holds
+    refresh_ms:         15 * 60 * 1000, // re-read roster + competitions (always-on TV)
     joke_chance_each:   0.0021,  // 0.21% chance per joke rivalry, per check
   };
 
@@ -23,6 +25,9 @@
   let holdTimeout = null;
   let overlay = null;
   let pbCursor = 0;           // rotates through PB events, one shown per cycle
+  let competitions = [];      // upcoming competitions from Supabase, soonest first
+  let compCursor = 0;         // rotates through them, one shown per cycle
+  let rosterById = new Map(); // Supabase id -> roster row, to link entries to lifters
 
   // ── Formatters ───────────────────────────────────────────────
   function fmt(val) {
@@ -248,6 +253,7 @@
 
   function applyRoster(roster) {
     if (!Array.isArray(roster) || roster.length === 0) return; // not seeded: keep data.js
+    rosterById = new Map(roster.map(r => [r.id, r]));
     const bySlugScraped = new Map(SCRAPED.map(l => [l.slug, l]));
     const next = [];
     for (const r of roster) {
@@ -273,9 +279,40 @@
       .catch(() => null); // offline or unreachable: data.js stands
   }
 
+  // ── Competitions (Supabase) ──────────────────────────────────
+  // Today's date as it is in the UK, as "YYYY-MM-DD"
+  function ukToday() {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" }).format(new Date());
+  }
+
+  // Whole days from today (UK) to a "YYYY-MM-DD" date
+  function daysUntil(dateStr) {
+    const toUTC = s => { const [y, m, d] = s.split("-").map(Number); return Date.UTC(y, m - 1, d); };
+    return Math.round((toUTC(dateStr) - toUTC(ukToday())) / 86400000);
+  }
+
+  function applyCompetitions(rows) {
+    if (!Array.isArray(rows)) return;
+    const today = ukToday();
+    competitions = rows.filter(c => c.date >= today);
+    if (dynamicActive) {
+      // Fold them into the cycle that's already running
+      dynamicPlaylist = buildPlaylist(getList());
+      playlistIndex = Math.min(playlistIndex, dynamicPlaylist.length);
+    }
+  }
+
+  function loadCompetitions() {
+    if (typeof ImplexusDB === "undefined" || !ImplexusDB.configured) return Promise.resolve(null);
+    return ImplexusDB.listCompetitions(ukToday(), 6000)
+      .then(rows => { applyCompetitions(rows); return rows; })
+      .catch(() => null); // unreachable: no competition cards this time
+  }
+
   // Used by admin.js to refresh the board behind it after a change
   window.ImplexusBoard = {
     applyRoster,
+    applyCompetitions,
     hasNumbers: slug => scrapedSlugs.has(slug),
   };
 
@@ -360,6 +397,13 @@
 
     const rivalries = shuffle(getRivalries(list)).slice(0, CONFIG.rivalries_per_break);
     for (const r of rivalries) pl.push({ type: 'rivalry', ...r });
+
+    // One upcoming competition after the rivalries, rotating each cycle
+    if (competitions.length) {
+      const comp = competitions[compCursor % competitions.length];
+      compCursor++;
+      pl.push({ type: 'comp', comp });
+    }
 
     // PB events for lifters visible in the current view (respects legacy toggle)
     const visibleSlugs = new Set(list.map(l => l.slug));
@@ -487,6 +531,11 @@
 
     if (slide.type === 'page') {
       showPageSlide(slide);
+      return;
+    }
+
+    if (slide.type === 'comp') {
+      showCompSlide(slide.comp);
       return;
     }
 
@@ -706,6 +755,55 @@
     holdTimeout = setTimeout(nextSlide, CONFIG.rivalry_hold_ms);
   }
 
+  // ── Upcoming competition slide ───────────────────────────────
+  function compDateText(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Intl.DateTimeFormat("en-GB", {
+      timeZone: "UTC", weekday: "long", day: "numeric", month: "long", year: "numeric",
+    }).format(new Date(Date.UTC(y, m - 1, d)));
+  }
+
+  function showCompSlide(comp) {
+    const days = daysUntil(comp.date);
+    const countdown = days <= 0
+      ? `<span class="dyn-comp-days dyn-comp-days-word">Today</span><span class="dyn-comp-unit">Comp day</span>`
+      : days === 1
+        ? `<span class="dyn-comp-days dyn-comp-days-word">Tomorrow</span><span class="dyn-comp-unit">Get some sleep</span>`
+        : `<span class="dyn-comp-days">${days}</span><span class="dyn-comp-unit">days to go</span>`;
+
+    // Lifters on the board lead, strongest first; everyone else after
+    const entries = (comp.competition_entries || []).map(e => {
+      const r = e.lifter_id != null ? rosterById.get(e.lifter_id) : null;
+      const onBoard = r ? LIFTERS.find(l => l.slug === r.slug) : null;
+      return { name: onBoard ? onBoard.name : e.name, dots: onBoard ? onBoard.dots : null };
+    }).sort((a, b) => (b.dots ?? -1) - (a.dots ?? -1));
+
+    const many = entries.length > 8;
+    const lifters = entries.length
+      ? entries.map((e, i) => `
+          <div class="dyn-comp-lifter" style="--i:${i}">
+            <span class="dyn-comp-name">${esc(e.name)}</span>
+            ${e.dots != null ? `<span class="dyn-comp-dots">${fmtDots(e.dots)}</span>` : ""}
+          </div>`).join("")
+      : `<div class="dyn-comp-tbc">Line-up to be confirmed</div>`;
+
+    overlay.innerHTML = `
+      <div class="dyn-comp">
+        <div class="dyn-comp-label">Upcoming competition</div>
+        <div class="dyn-comp-head">
+          <div class="dyn-comp-fed">${esc(comp.fed)}</div>
+          <div class="dyn-comp-countdown">${countdown}</div>
+        </div>
+        <div class="dyn-comp-date">${compDateText(comp.date)}</div>
+        ${entries.length ? `<div class="dyn-comp-count">${entries.length} lifting</div>` : ""}
+        <div class="dyn-comp-lifters${many ? " dyn-comp-lifters-many" : ""}">${lifters}</div>
+      </div>
+      ${dynFooterHTML()}
+    `;
+
+    holdTimeout = setTimeout(nextSlide, CONFIG.comp_hold_ms);
+  }
+
   // ── Enter / exit dynamic ──────────────────────────────────────
   function enterDynamic() {
     dynamicActive = true;
@@ -887,6 +985,8 @@
     setUpdatedLine();       // show real refresh date if available
     restoreFromHash();      // re-apply state (dynamic by default)
     loadRoster();           // apply live roster edits on top of data.js
+    loadCompetitions();     // upcoming competitions for the TV
+    setInterval(() => { loadRoster(); loadCompetitions(); }, CONFIG.refresh_ms);
     scheduleDailyReload();  // arm the next daily 12:15 refresh
   }
 

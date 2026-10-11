@@ -31,6 +31,8 @@ daily scraper (`scripts/scrape.mjs`), which runs in GitHub Actions.
 - `admin.js`: the admin screen (add, edit and remove lifters)
 - `supabase/setup.sql`: creates the roster table and the code-checked admin functions
 - `supabase/seed.sql`: copies the original roster into Supabase (run once)
+- `supabase/competitions.sql`: competitions and who's lifting in them
+- `retro.css` + `img/vapor-sky.svg`: the retro theme (scene, CRT effects) on top of `style.css`
 - `supabase/instant-sync.sql`: optional, refreshes the board within minutes of a change
 - `scripts/scrape.mjs`: daily refresh script
 - `.github/workflows/refresh.yml`: schedules the scrape
@@ -55,6 +57,12 @@ the dashboard you can:
 
 - **Add a lifter**: name, OpenPowerlifting link, optional Instagram, legacy on/off
 - **Edit lifters**: search, then change any of those details or remove the lifter
+- **Competitions**: add a meet (federation + date), then add who's lifting: anyone
+  from the roster, or anyone else by name (they show on that competition only,
+  not on the leaderboard). Edit or remove meets the same way.
+
+Upcoming competitions show on the TV after the rivalries, one per cycle, with a
+countdown and the line-up. They drop off automatically once the date has passed.
 
 Thirty wrong codes in ten minutes locks admin for everyone for ten minutes,
 which makes guessing impractical. To change the code, run the last statement
@@ -75,6 +83,7 @@ your real code to this repo.
    projects, the `anon` `public` key). Never use the secret / `service_role` key.
 5. Put both into `config.js` and push. Vercel redeploys and the cog starts
    working.
+6. For competitions, run `supabase/competitions.sql` in the SQL Editor too.
 
 The daily refresh reads from Supabase every day, which should keep a free
 project from being paused for inactivity.

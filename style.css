@@ -1534,8 +1534,151 @@ body.admin-open { overflow: hidden; }
   .admin-danger-zone { align-items: flex-start; }
 }
 
+/* ── Competitions (admin) ────────────────────────────────── */
+.admin-actions-top { margin: 0 0 18px; }
+.field-heading {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.entry-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+}
+.entry-name { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entry-empty { margin: 0 0 10px; }
+.entry-remove {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.entry-remove svg { width: 18px; height: 18px; }
+.entry-remove:hover { color: var(--danger); background: var(--danger-dim); }
+.tag-guest { color: var(--text-muted); }
+.btn-add-entry { width: 100%; }
+.btn-add-entry[hidden] { display: none; }
+.picker {
+  margin-top: 4px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+.picker[hidden] { display: none; }
+.picker .search { margin-bottom: 8px; }
+.picker-results { display: flex; flex-direction: column; gap: 2px; max-height: 260px; overflow-y: auto; margin-bottom: 14px; }
+.picker-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.picker-item:hover { background: var(--bg-card-hover); }
+.picker-plus { color: var(--accent); font-weight: 700; font-size: 18px; width: 16px; text-align: center; }
+.picker-guest label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; }
+.picker-guest-row { display: flex; gap: 8px; }
+.picker-guest-row input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--ctrl-border);
+  background: var(--bg);
+  color: var(--text-primary);
+  font: 16px/1.2 'Inter', sans-serif;
+}
+.picker-guest-row .btn { min-height: 44px; }
+.picker > .btn-ghost { width: 100%; margin-top: 10px; }
+.comp-item.is-past { opacity: 0.55; }
+
+/* ── Upcoming competition slide (TV) ─────────────────────── */
+.dyn-comp {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.2vh;
+  padding: 6vh 6vw 9vh;
+  text-align: center;
+}
+.dyn-comp-label {
+  font-weight: 700;
+  font-size: clamp(12px, 1.5vw, 22px);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.dyn-comp-head { display: flex; align-items: center; justify-content: center; gap: 4vw; flex-wrap: wrap; }
+.dyn-comp-fed {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: clamp(48px, 9vw, 160px);
+  line-height: 0.95;
+  color: #fff;
+}
+.dyn-comp-countdown { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.dyn-comp-days {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: clamp(48px, 8vw, 140px);
+  color: var(--gold);
+}
+.dyn-comp-days-word { font-size: clamp(36px, 5.5vw, 96px); }
+.dyn-comp-unit { font-size: clamp(12px, 1.4vw, 20px); font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+.dyn-comp-date { font-size: clamp(16px, 2vw, 30px); font-weight: 500; color: rgba(255,255,255,0.75); }
+.dyn-comp-count { font-size: clamp(11px, 1.2vw, 16px); letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+.dyn-comp-lifters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.2vh 1vw;
+  max-width: min(1500px, 90vw);
+  margin-top: 1vh;
+}
+.dyn-comp-lifter {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  padding: 1vh 1.4vw;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  animation: fadeUp 0.5s ease both;
+  animation-delay: calc(0.5s + var(--i, 0) * 0.08s);
+}
+.dyn-comp-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(18px, 2.4vw, 40px); color: #fff; }
+.dyn-comp-dots { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: clamp(14px, 1.6vw, 26px); color: var(--gold); }
+.dyn-comp-lifters-many .dyn-comp-name { font-size: clamp(16px, 1.9vw, 32px); }
+.dyn-comp-lifters-many .dyn-comp-dots { font-size: clamp(12px, 1.3vw, 22px); }
+.dyn-comp-tbc { font-size: clamp(16px, 2vw, 28px); font-style: italic; color: rgba(255,255,255,0.5); }
+
 @media (prefers-reduced-motion: reduce) {
-  .admin, .admin-modal, .success-mark,
+  .admin, .admin-modal, .success-mark, .dyn-comp-lifter,
   .admin-pin.is-wrong .pin-dots,
   .admin-pin.is-checking .pin-dots span.is-filled { animation: none !important; }
   .admin-cog:hover { transform: none; }
