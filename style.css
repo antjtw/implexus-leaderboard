@@ -1616,6 +1616,13 @@ body.admin-open { overflow: hidden; }
 .picker > .btn-ghost { width: 100%; margin-top: 10px; }
 .comp-item.is-past { opacity: 0.55; }
 
+/* ── TV content scale ──────────────────────────────────────
+   Everything on the TV is drawn at 85%, like a browser zoomed out one
+   step, so the board has room to breathe. Only the content is scaled:
+   the backdrop (and the CRT layer in retro.css) stays full size. */
+#dynamic-overlay { --dyn-scale: 0.85; }
+#dynamic-overlay > *:not(.dyn-fill) { zoom: var(--dyn-scale); }
+
 /* ── On-screen display (TV): channel + slide top left, clock top right ── */
 .dyn-osd {
   position: absolute;
