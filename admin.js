@@ -86,6 +86,15 @@
     throw new Error(ERRORS[code] || NETWORK_ERROR);
   }
 
+  // The site is newer than the database: a SQL file in supabase/ needs running
+  function friendlyError(err) {
+    const msg = (err && err.message) || "";
+    if (/could not find the function|schema cache/i.test(msg)) {
+      return "The database needs updating. Run the latest supabase/competitions.sql in the Supabase SQL Editor, then try again.";
+    }
+    return msg || NETWORK_ERROR;
+  }
+
   async function refreshRoster() {
     roster = await ImplexusDB.listLifters();
     if (window.ImplexusBoard) window.ImplexusBoard.applyRoster(roster);
@@ -610,7 +619,7 @@
             : `Saved ${nameVal}. That date has passed, so it won't show on the TV.`);
         } catch (err) {
           if (err.handled) return;
-          formError.textContent = err.message || NETWORK_ERROR;
+          formError.textContent = friendlyError(err);
           submitBtn.disabled = false;
           submitBtn.classList.remove("is-busy");
         }
@@ -838,7 +847,7 @@
         await onSubmit({ name, slug, ig, legacy: legacySwitch.getAttribute("aria-checked") === "true" }, form);
       } catch (err) {
         if (err.handled) return;
-        formError.textContent = err.message || NETWORK_ERROR;
+        formError.textContent = friendlyError(err);
         submitBtn.disabled = false;
         submitBtn.classList.remove("is-busy");
       }
@@ -886,7 +895,7 @@
       confirmCfg = null;
     } catch (err) {
       if (err.handled) { modal.remove(); confirmCfg = null; return; }
-      modal.querySelector(".form-error").textContent = err.message || NETWORK_ERROR;
+      modal.querySelector(".form-error").textContent = friendlyError(err);
       yes.disabled = false;
       yes.classList.remove("is-busy");
     }

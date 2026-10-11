@@ -172,3 +172,6 @@ drop trigger if exists lifters_sync_entry_names on public.lifters;
 create trigger lifters_sync_entry_names
   after update of name on public.lifters
   for each row execute function private.sync_entry_names();
+
+-- Tell the API to pick up the new and changed functions straight away
+notify pgrst, 'reload schema';
