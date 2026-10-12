@@ -147,8 +147,8 @@ const LIFTERS = [
     name: "John Cousins",
     slug: "johncousins1",
     ig: null,
-    squat: 165, bench: 125, deadlift: 192.5, total: 477.5, dots: 324.35,
-    fed: "EPA", equip: "Raw", bodyweight: "82.1",
+    squat: 170, bench: 125, deadlift: 192.5, total: 482.5, dots: 326.39,
+    fed: "EPA", equip: "Raw", bodyweight: "82.7",
   },
   {
     name: "Lee McCafferty",
