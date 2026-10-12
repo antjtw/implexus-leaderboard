@@ -1,0 +1,31 @@
+name: Keep Supabase projects awake
+
+# Supabase pauses free projects after about a week without activity. This
+# queries each project once a day so that never happens.
+#
+#  - The leaderboard project: read from config.js, nothing to set up.
+#  - Any other project: add two repository secrets named <NAME>_SUPABASE_URL
+#    and <NAME>_SUPABASE_KEY (the publishable/anon key), add NAME to the list
+#    below, and run supabase/keep-alive.sql once in that project.
+#
+# If a ping fails, the run goes red and GitHub emails you.
+on:
+  schedule:
+    - cron: "17 6 * * *"   # daily, 06:17 UTC
+  workflow_dispatch: {}    # manual "Run workflow" button
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Ping projects
+        env:
+          MTFBWY_SUPABASE_URL: ${{ secrets.MTFBWY_SUPABASE_URL }}
+          MTFBWY_SUPABASE_KEY: ${{ secrets.MTFBWY_SUPABASE_KEY }}
+        run: bash scripts/supabase-keepalive.sh MTFBWY
