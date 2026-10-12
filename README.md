@@ -88,6 +88,21 @@ your real code to this repo.
 The daily refresh reads from Supabase every day, which should keep a free
 project from being paused for inactivity.
 
+### Keeping free projects awake
+
+Supabase pauses free projects after about a week without activity. The
+**Keep Supabase projects awake** GitHub Action (`.github/workflows/supabase-keepalive.yml`)
+queries each project once a day so that doesn't happen. The leaderboard project
+needs no setup. To add another project (it's set up for one named `MTFBWY`):
+
+1. Run `supabase/keep-alive.sql` in that project's SQL Editor.
+2. On GitHub: **Settings → Secrets and variables → Actions → New repository secret**.
+   Add `MTFBWY_SUPABASE_URL` (the project URL) and `MTFBWY_SUPABASE_KEY` (its
+   publishable / anon key).
+3. **Actions → Keep Supabase projects awake → Run workflow** to check it goes green.
+
+For more projects, add their two secrets and name to the workflow file.
+
 ### Instant sync (optional)
 
 Without this, new lifters appear after the next daily refresh. With it, any
