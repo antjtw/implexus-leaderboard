@@ -22,6 +22,7 @@ daily scraper (`scripts/scrape.mjs`), which runs in GitHub Actions.
 ## Files
 
 - `index.html`: markup
+- `api/keepalive.js`: daily check-in that keeps the free Supabase project awake
 - `style.css`: all styling (light/dark via system preference)
 - `config.js`: the Supabase project URL and publishable key (both public)
 - `supabase.js`: a tiny Supabase REST client shared by the board and admin
@@ -88,20 +89,14 @@ your real code to this repo.
 The daily refresh reads from Supabase every day, which should keep a free
 project from being paused for inactivity.
 
-### Keeping free projects awake
+### Keeping the project awake
 
-Supabase pauses free projects after about a week without activity. The
-**Keep Supabase projects awake** GitHub Action (`.github/workflows/supabase-keepalive.yml`)
-queries each project once a day so that doesn't happen. The leaderboard project
-needs no setup. To add another project (it's set up for one named `MTFBWY`):
-
-1. Run `supabase/keep-alive.sql` in that project's SQL Editor.
-2. On GitHub: **Settings → Secrets and variables → Actions → New repository secret**.
-   Add `MTFBWY_SUPABASE_URL` (the project URL) and `MTFBWY_SUPABASE_KEY` (its
-   publishable / anon key).
-3. **Actions → Keep Supabase projects awake → Run workflow** to check it goes green.
-
-For more projects, add their two secrets and name to the workflow file.
+Supabase pauses free projects after about a week without activity. Vercel calls
+`/api/keepalive` once a day (the `crons` entry in `vercel.json`), and that reads
+one row from the roster, so the database always has recent activity. Nothing to
+set up: it runs on Vercel's free plan once deployed. You can see each run under
+the project's **Settings → Cron Jobs** in Vercel, and open
+`/api/keepalive` in a browser to check it by hand (it answers `{"ok":true,...}`).
 
 ### Instant sync (optional)
 
