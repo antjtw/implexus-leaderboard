@@ -14,8 +14,8 @@
 //   ageing out after 7 days. A new PB for a lifter overrides their older one.
 
 const CHANGES = {
-  "generated": "2026-10-19T17:13:46.489Z",
-  "baselineDate": "2026-10-12T20:01:59.341Z",
+  "generated": "2026-10-20T15:25:28.309Z",
+  "baselineDate": "2026-10-20T15:25:28.309Z",
   "prevRankActive": {
     "wyliesung": 1,
     "mikejones1": 2,
@@ -73,8 +73,8 @@ const CHANGES = {
     "finndavis": 30,
     "matthewanderson2": 31,
     "owencrisp": 32,
-    "samlusher": 33,
-    "johncousins1": 34,
+    "johncousins1": 33,
+    "samlusher": 34,
     "robjacobs": 35,
     "roryturnbull": 36,
     "kellybroadbent": 37,
@@ -216,25 +216,5 @@ const CHANGES = {
   ],
   "arrivals": [],
   "departures": [],
-  "pbEvents": [
-    {
-      "slug": "johncousins1",
-      "name": "John Cousins",
-      "improved": {
-        "squat": {
-          "from": 165,
-          "to": 170
-        },
-        "total": {
-          "from": 477.5,
-          "to": 482.5
-        }
-      },
-      "dots": {
-        "from": 324.35,
-        "to": 326.39
-      },
-      "date": "2026-10-12T20:01:59.341Z"
-    }
-  ]
+  "pbEvents": []
 };
