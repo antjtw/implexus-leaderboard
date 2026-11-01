@@ -81,7 +81,7 @@ const LIFTERS = [
     fed: "EPA", equip: "Raw", bodyweight: "75.4",
   },
   {
-    name: "Joe Curzon",
+    name: "Jotatas Bravas",
     slug: "joecurzon",
     ig: "joecurzon93",
     squat: 242.5, bench: 125, deadlift: 250, total: 615, dots: 378.87,
@@ -119,15 +119,15 @@ const LIFTERS = [
     name: "Laura Jones",
     slug: "laurajones6",
     ig: "lauraelizabeth193",
-    squat: 82.5, bench: 45, deadlift: 117.5, total: 245, dots: 245.62,
-    fed: "WRPF-UK", equip: "Raw", bodyweight: "69.8",
+    squat: 87.5, bench: 47.5, deadlift: 122.5, total: 257.5, dots: 259.16,
+    fed: "WRPF-UK", equip: "Raw", bodyweight: "70.6",
   },
   {
     name: "Jack Larkins-Thomas",
     slug: "jacklarkinsthomas",
     ig: "jackliftingstuff",
-    squat: 160, bench: 82.5, deadlift: 180, total: 422.5, dots: 245.91,
-    fed: "WRPF-UK", equip: "Raw", bodyweight: "115.4",
+    squat: 180, bench: 92.5, deadlift: 195, total: 467.5, dots: 267.53,
+    fed: "WRPF-UK", equip: "Raw", bodyweight: "121.3",
   },
   {
     name: "Dr. Pete King",
