@@ -512,35 +512,12 @@
   // Persistent overlay footer: last-updated (bottom-left) + exit hint
   // (bottom-right). Included in every slide's markup so it survives the
   // innerHTML swaps, and excluded from the cross-slide fade.
-  function dynFooterHTML(label) {
+  function dynFooterHTML() {
     const updated = lastUpdatedText();
     return `
-      <div class="dyn-osd" aria-hidden="true">
-        <div class="dyn-osd-left"><span>CH 9B</span><span class="dyn-osd-label">${label || ""}</span></div>
-        <div class="dyn-osd-right">${osdClockHTML()}</div>
-      </div>
       ${updated ? `<div class="dyn-updated">${updated}</div>` : ""}
       <div class="dyn-exit-hint">tap to exit</div>`;
   }
-
-  // VHS-style on-screen display clock, in UK time: "OCT 10 2026" / "PM 4:58"
-  function osdClockHTML() {
-    const parts = {};
-    new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Europe/London", day: "2-digit", month: "short", year: "numeric",
-      hour: "numeric", minute: "2-digit", hour12: true,
-    }).formatToParts(new Date()).forEach(p => { parts[p.type] = p.value; });
-    const ampm = (parts.dayPeriod || "").toUpperCase().replace(/\./g, "");
-    return `<span>${(parts.month || "").toUpperCase()} ${parts.day} ${parts.year}</span>` +
-           `<span>${ampm} ${parts.hour}:${parts.minute}</span>`;
-  }
-
-  // Keep the OSD clock ticking while the TV is showing
-  setInterval(() => {
-    if (!overlay) return;
-    const el = overlay.querySelector(".dyn-osd-right");
-    if (el) el.innerHTML = osdClockHTML();
-  }, 15000);
 
   function renderSlide() {
     // When we've run through the current cycle, build a fresh randomised one
@@ -632,7 +609,7 @@
         </div>
         ${captionHTML}
       </div>
-      ${dynFooterHTML(`RANKINGS ${pageIndex + 1}/${pageCount}`)}
+      ${dynFooterHTML()}
     `;
 
     // Cascade each row in from the side
@@ -729,7 +706,7 @@
           </div>
         </div>`}
       </div>
-      ${dynFooterHTML(joke ? "GRUDGE MATCH" : "RIVALRY")}
+      ${dynFooterHTML()}
     `;
 
     // Animate gap bar in
@@ -772,7 +749,7 @@
         <div class="dyn-pb-lines">${rows}</div>
         ${placesUp}
       </div>
-      ${dynFooterHTML("NEW PB")}
+      ${dynFooterHTML()}
     `;
 
     holdTimeout = setTimeout(nextSlide, CONFIG.rivalry_hold_ms);
@@ -835,7 +812,7 @@
         ${entries.length ? `<div class="dyn-comp-count">${entries.length} lifting</div>` : ""}
         <div class="dyn-comp-lifters${many ? " dyn-comp-lifters-many" : ""}">${lifters}</div>
       </div>
-      ${dynFooterHTML("NEXT MEET")}
+      ${dynFooterHTML()}
     `;
 
     holdTimeout = setTimeout(nextSlide, CONFIG.comp_hold_ms);
@@ -911,13 +888,13 @@
     window.location.reload();
   }
 
-  // Restore state from the hash on load (set by the daily reload, and kept in
-  // step as people switch views). With no hash, arrive in dynamic mode; tapping
-  // it drops to the static board, which then sticks for this tab.
+  // Restore state from the hash on load (set by the daily reload). The board
+  // always opens in dynamic mode; tapping it drops to the static board. Only
+  // the legacy on/off choice carries over from the hash.
   function restoreFromHash() {
     const h = (window.location.hash || "").replace(/^#/, "");
     const wantLegacy = h.endsWith("-legacy");
-    const wantDynamic = !h || h.startsWith("dynamic");
+    const wantDynamic = true;
 
     if (wantLegacy) applyLegacy(true);
 

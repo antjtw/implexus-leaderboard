@@ -33,7 +33,6 @@ daily scraper (`scripts/scrape.mjs`), which runs in GitHub Actions.
 - `supabase/setup.sql`: creates the roster table and the code-checked admin functions
 - `supabase/seed.sql`: copies the original roster into Supabase (run once)
 - `supabase/competitions.sql`: competitions and who's lifting in them
-- `retro.css` + `img/vapor-sky.svg`: the retro theme (scene, CRT effects) on top of `style.css`
 - `supabase/instant-sync.sql`: optional, refreshes the board within minutes of a change
 - `scripts/scrape.mjs`: daily refresh script
 - `.github/workflows/refresh.yml`: schedules the scrape

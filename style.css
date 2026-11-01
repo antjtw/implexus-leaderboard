@@ -1616,31 +1616,6 @@ body.admin-open { overflow: hidden; }
 .picker > .btn-ghost { width: 100%; margin-top: 10px; }
 .comp-item.is-past { opacity: 0.55; }
 
-/* ── TV content scale ──────────────────────────────────────
-   Everything on the TV is drawn at 85%, like a browser zoomed out one
-   step, so the board has room to breathe. Only the content is scaled:
-   the backdrop (and the CRT layer in retro.css) stays full size. */
-#dynamic-overlay { --dyn-scale: 0.85; }
-#dynamic-overlay > *:not(.dyn-fill) { zoom: var(--dyn-scale); }
-
-/* ── On-screen display (TV): channel + slide top left, clock top right ── */
-.dyn-osd {
-  position: absolute;
-  top: 2.4vh;
-  left: 3vw;
-  right: 3vw;
-  display: flex;
-  justify-content: space-between;
-  pointer-events: none;
-  font-size: clamp(14px, 1.6vw, 24px);
-  letter-spacing: 0.08em;
-  color: rgba(255,255,255,0.6);
-  z-index: 2;
-}
-.dyn-osd-left, .dyn-osd-right { display: flex; flex-direction: column; gap: 0.2em; }
-.dyn-osd-right { text-align: right; }
-.dyn-page-indicator { visibility: hidden; }   /* the OSD shows the page now */
-
 /* ── Upcoming competition slide (TV) ─────────────────────── */
 .dyn-comp {
   flex: 1;
