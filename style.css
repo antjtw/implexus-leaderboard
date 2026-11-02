@@ -19,7 +19,7 @@
   --bronze:         #cd7f32;
   --text-primary:   #e8e8e8;
   --text-muted:     #7a7d85;
-  --text-dim:       #3f4148;
+  --text-dim:       #70737c;
   --legacy-bg:      rgba(255,213,0,0.06);
   --legacy-border:  rgba(255,213,0,0.2);
   --ctrl-bg:        #222326;
@@ -49,7 +49,7 @@
   --bronze:         #9a5e1a;
   --text-primary:   #1a1a1a;
   --text-muted:     #5a5d66;
-  --text-dim:       #b0b3bc;
+  --text-dim:       #84878f;
   --legacy-bg:      rgba(201,168,0,0.05);
   --legacy-border:  rgba(201,168,0,0.25);
   --ctrl-bg:        #eaeae7;
@@ -145,7 +145,7 @@ a { color: inherit; text-decoration: none; }
 /* Legacy / ctrl button */
 .ctrl-btn {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -153,8 +153,9 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid var(--ctrl-border);
   color: var(--ctrl-text);
   cursor: pointer;
-  padding: 5px 10px;
-  border-radius: 5px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
   transition: background 0.12s, color 0.12s, border-color 0.12s;
   white-space: nowrap;
 }
@@ -1715,4 +1716,82 @@ body.admin-open { overflow: hidden; }
   .admin-pin.is-wrong .pin-dots,
   .admin-pin.is-checking .pin-dots span.is-filled { animation: none !important; }
   .admin-cog:hover { transform: none; }
+}
+
+/* ============================================================
+   STATIC BOARD: sort + filter, and small tidy-ups
+   (static board only; nothing here touches the TV's dynamic mode)
+   ============================================================ */
+
+/* Keyboard focus that's easy to see */
+main a:focus-visible,
+main button:focus-visible,
+.site-header button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.board-controls {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 10px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Segmented control: a row of buttons, one pressed */
+.seg {
+  display: inline-flex;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 3px;
+  gap: 2px;
+  border-radius: 10px;
+  background: var(--ctrl-bg);
+  border: 1px solid var(--ctrl-border);
+  -webkit-overflow-scrolling: touch;
+}
+.seg[hidden] { display: none; }
+.seg-btn {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ctrl-text);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.seg-btn:hover { color: var(--text-primary); background: var(--ctrl-hover); }
+.seg-btn[aria-pressed="true"] { background: var(--accent); color: #111; }
+
+/* The figure the board is sorted by */
+.table-header .is-sorted { color: var(--accent); }
+.stat-value.is-sorted { font-weight: 800; }
+.stat-value.is-sorted.dots-highlight { color: var(--accent); }
+.col-lift.is-sorted, .col-total.is-sorted { font-weight: 800; }
+
+.board-empty {
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border-radius: 8px;
+}
+
+/* Softer rows with a little more air */
+.leaderboard { gap: 4px; }
+.lb-row, .bar-bg { border-radius: 8px; }
+
+@media (min-width: 600px) {
+  .board-controls { padding: 0 16px 16px; }
+  .seg-btn { padding: 0 14px; }
 }

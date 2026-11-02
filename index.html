@@ -31,7 +31,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=7" />
+  <link rel="stylesheet" href="style.css?v=8" />
 </head>
 <body>
 
@@ -50,15 +50,31 @@
       <button id="dynamic-toggle" class="ctrl-btn ctrl-btn-dynamic">Dynamic</button>
     </div>
 
+    <div class="board-controls">
+      <div class="seg" role="group" aria-label="Sort by">
+        <button type="button" class="seg-btn" data-sort="dots" aria-pressed="true">DOTS</button>
+        <button type="button" class="seg-btn" data-sort="total" aria-pressed="false">Total</button>
+        <button type="button" class="seg-btn" data-sort="squat" aria-pressed="false">Squat</button>
+        <button type="button" class="seg-btn" data-sort="bench" aria-pressed="false">Bench</button>
+        <button type="button" class="seg-btn" data-sort="deadlift" aria-pressed="false">Deadlift</button>
+      </div>
+      <div class="seg" role="group" aria-label="Show" id="sex-filter" hidden>
+        <button type="button" class="seg-btn" data-sex="all" aria-pressed="true">All</button>
+        <button type="button" class="seg-btn" data-sex="M" aria-pressed="false">Men</button>
+        <button type="button" class="seg-btn" data-sex="F" aria-pressed="false">Women</button>
+      </div>
+      <p class="visually-hidden" id="board-status" role="status" aria-live="polite"></p>
+    </div>
+
     <div class="table-wrap">
       <div class="table-header">
         <span class="col-rank">#</span>
         <span class="col-name">Athlete</span>
-        <span class="col-lift">SQ</span>
-        <span class="col-lift">BP</span>
-        <span class="col-lift">DL</span>
-        <span class="col-total">Total</span>
-        <span class="col-dots">DOTS</span>
+        <span class="col-lift" data-col="squat">SQ</span>
+        <span class="col-lift" data-col="bench">BP</span>
+        <span class="col-lift" data-col="deadlift">DL</span>
+        <span class="col-total" data-col="total">Total</span>
+        <span class="col-dots" data-col="dots">DOTS</span>
       </div>
       <div class="leaderboard" id="leaderboard"></div>
     </div>
@@ -76,9 +92,9 @@
 
   <script src="config.js?v=2"></script>
   <script src="supabase.js?v=4"></script>
-  <script src="data.js?v=2"></script>
+  <script src="data.js?v=3"></script>
   <script src="changes.js?v=2"></script>
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
   <script src="admin.js?v=5"></script>
 </body>
 </html>

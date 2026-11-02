@@ -30,6 +30,7 @@ const CONFIG_PATH = join(ROOT, "config.js");
 const CHANGES_PATH = join(ROOT, "changes.js");
 
 const BASE = "https://www.openpowerlifting.org/u/";
+const CSV_BASE = "https://www.openpowerlifting.org/api/liftercsv/";
 const REQUEST_DELAY_MS = 1200;        // polite gap between requests
 const MIN_PARSE_RATIO = 0.6;          // abort if fewer than 60% parse OK
 const DOTS_MATCH_TOLERANCE = 0.01;    // matching PB dots to a competition row
@@ -193,7 +194,70 @@ function parseProfile(html) {
     fed,
     equip,
     bodyweight,
+    sexFromClasses: sexFromClasses(compRows.filter((c) => c.length >= 10).map((c) => c[8])),
   };
+}
+
+// ── Sex (for the Men / Women filter) ─────────────────────────────
+// Preferred: the lifter's CSV from OpenPowerlifting, which records Sex (M/F)
+// on every meet. Fallback: weight classes that only exist for one sex
+// (IPF-style classes; 56/60/67.5/75 etc. are shared by men and women in
+// other feds, so they're ignored). Returns "M", "F" or null.
+const WOMEN_ONLY_CLASSES = new Set(["43", "47", "57", "63", "69", "76", "84", "84+"]);
+const MEN_ONLY_CLASSES = new Set(["53", "59", "66", "74", "83", "93", "105", "120", "120+"]);
+
+function sexFromClasses(classes) {
+  let m = 0, f = 0;
+  for (const raw of classes) {
+    const c = String(raw || "").replace(/kg$/i, "").trim();
+    if (WOMEN_ONLY_CLASSES.has(c)) f++;
+    else if (MEN_ONLY_CLASSES.has(c)) m++;
+  }
+  if (m && !f) return "M";
+  if (f && !m) return "F";
+  return null;
+}
+
+// Minimal CSV line splitter that respects quotes (meet names contain commas)
+function splitCsvLine(line) {
+  const out = [];
+  let cur = "", quoted = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (quoted) {
+      if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+      else if (ch === '"') quoted = false;
+      else cur += ch;
+    } else if (ch === '"') quoted = true;
+    else if (ch === ",") { out.push(cur); cur = ""; }
+    else cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+
+function sexFromCsv(csv) {
+  const lines = csv.split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) return null;
+  const col = splitCsvLine(lines[0]).indexOf("Sex");
+  if (col < 0) return null;
+  let m = 0, f = 0;
+  for (const line of lines.slice(1)) {
+    const v = splitCsvLine(line)[col];
+    if (v === "M") m++;
+    else if (v === "F") f++;
+  }
+  if (m > f) return "M";
+  if (f > m) return "F";
+  return null;
+}
+
+async function fetchSex(slug) {
+  const res = await fetch(CSV_BASE + slug, {
+    headers: { "User-Agent": "ImplexusLeaderboard/1.0 (gym leaderboard refresh)" },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return sexFromCsv(await res.text());
 }
 
 // ── Ranking helper ───────────────────────────────────────────────
@@ -216,6 +280,7 @@ function serialiseData(lifters) {
       `    squat: ${l.squat}, bench: ${l.bench}, deadlift: ${l.deadlift}, total: ${l.total}, dots: ${l.dots},`,
       `    fed: ${JSON.stringify(l.fed ?? null)}, equip: ${JSON.stringify(l.equip ?? null)}, bodyweight: ${l.bodyweight == null ? "null" : JSON.stringify(String(l.bodyweight))},`,
     ];
+    if (l.sex) parts.push(`    sex: ${JSON.stringify(l.sex)},`);
     if (l.legacy) parts.push(`    legacy: true,`);
     parts.push(`  },`);
     return parts.join("\n");
@@ -230,6 +295,7 @@ function serialiseData(lifters) {
 // For lifters with Raw + Wraps entries, best DOTS row determines ranking;
 // individual lift PBs are taken across both equip categories.
 // legacy: true = former member, shown only when legacy filter is on.
+// sex: "M" / "F" from OpenPowerlifting, for the Men / Women filter.
 //
 // This file is written automatically every day by scripts/scrape.mjs. Once
 // Supabase is connected, the roster (who's on the board, names, Instagram,
@@ -390,6 +456,18 @@ async function main() {
       if (scraped.fed) next.fed = scraped.fed;
       if (scraped.equip) next.equip = scraped.equip;
       if (scraped.bodyweight) next.bodyweight = scraped.bodyweight;
+
+      // Sex for the Men / Women filter: CSV first, then weight classes, else
+      // keep whatever we had. A failure here never fails the lifter.
+      let sex = null;
+      try {
+        await sleep(REQUEST_DELAY_MS);
+        sex = await fetchSex(lifter.slug);
+      } catch (err) {
+        console.warn(`  ! ${lifter.name}: sex lookup failed (${err.message})`);
+      }
+      sex = sex || scraped.sexFromClasses || lifter.sex || null;
+      if (sex) next.sex = sex; else delete next.sex;
 
       okCount++;
       console.log(`  ✓ ${lifter.name} (${scraped.dots})`);

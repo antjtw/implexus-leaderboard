@@ -440,39 +440,62 @@
     return 30 + ((dots - min) / (max - min || 1)) * 70;
   }
 
+  // ── Static board: sort + filter ──────────────────────────────
+  // Only the static board uses these; the TV always shows DOTS, everyone.
+  const SORTS = {
+    dots:     { label: "DOTS",     get: l => l.dots },
+    total:    { label: "Total",    get: l => l.total },
+    squat:    { label: "Squat",    get: l => l.squat },
+    bench:    { label: "Bench",    get: l => l.bench },
+    deadlift: { label: "Deadlift", get: l => l.deadlift },
+  };
+  const SEXES = { all: "Everyone", M: "Men", F: "Women" };
+  let sortKey = "dots";
+  let sexFilter = "all";
+
+  function getStaticList() {
+    const get = SORTS[sortKey].get;
+    return (showLegacy ? [...LIFTERS] : LIFTERS.filter(l => !l.legacy))
+      .filter(l => sexFilter === "all" || l.sex === sexFilter)
+      .sort((a, b) => (get(b) || 0) - (get(a) || 0) || b.dots - a.dots);
+  }
+
   function renderRow(lifter, rank, min, max) {
     const isTop3 = rank <= 3;
     const rankClass = rank === 1 ? "rank-gold" : rank === 2 ? "rank-silver" : rank === 3 ? "rank-bronze" : "";
     const rowClass = [rank === 1 ? "row-first" : "", lifter.legacy ? "row-legacy" : ""].filter(Boolean).join(" ");
-    const dotsHL = isTop3 ? "dots-highlight" : "";
     const legacyBadge = lifter.legacy ? `<span class="legacy-badge">Legacy</span>` : "";
+    // Arrows track the weekly DOTS ranking of everyone, so only show them there
+    const arrows = sortKey === "dots" && sexFilter === "all";
+    // The figure the board is sorted by gets the yellow treatment
+    const hl = key => key === sortKey ? (isTop3 ? " dots-highlight is-sorted" : " is-sorted") : "";
 
     return `
     <article class="lb-row ${rowClass}" data-rank="${rank}">
-      <div class="bar-bg" style="width:${barWidth(lifter.dots,min,max)}%"></div>
+      <div class="bar-bg" style="width:${barWidth(SORTS[sortKey].get(lifter) || 0, min, max)}%"></div>
       <div class="row-inner">
-        <span class="col-rank ${rankClass}">${rank}${movementArrow(lifter.slug, rank)}</span>
+        <span class="col-rank ${rankClass}">${rank}${arrows ? movementArrow(lifter.slug, rank) : ""}</span>
         <div class="col-name-wrap">
           <div class="name-line">
             <a class="athlete-name" href="https://www.openpowerlifting.org/u/${lifter.slug}" target="_blank" rel="noopener">${esc(lifter.name)}</a>
             ${legacyBadge}${igLink(lifter.ig)}
           </div>
         </div>
-        <span class="col-lift desktop-only">${fmt(lifter.squat)}</span>
-        <span class="col-lift desktop-only">${fmt(lifter.bench)}</span>
-        <span class="col-lift desktop-only">${fmt(lifter.deadlift)}</span>
-        <span class="col-total desktop-only">${fmt(lifter.total)}</span>
-        <span class="col-dots desktop-only ${dotsHL}">${fmtDots(lifter.dots)}</span>
+        <span class="col-lift desktop-only${hl("squat")}">${fmt(lifter.squat)}</span>
+        <span class="col-lift desktop-only${hl("bench")}">${fmt(lifter.bench)}</span>
+        <span class="col-lift desktop-only${hl("deadlift")}">${fmt(lifter.deadlift)}</span>
+        <span class="col-total desktop-only${hl("total")}">${fmt(lifter.total)}</span>
+        <span class="col-dots desktop-only${hl("dots")}">${fmtDots(lifter.dots)}</span>
         <div class="stats-mobile mobile-only">
-          ${statItem("SQ",    fmt(lifter.squat))}
+          ${statItem("SQ",    fmt(lifter.squat), hl("squat"))}
           <div class="sep"></div>
-          ${statItem("BP",    fmt(lifter.bench))}
+          ${statItem("BP",    fmt(lifter.bench), hl("bench"))}
           <div class="sep"></div>
-          ${statItem("DL",    fmt(lifter.deadlift))}
+          ${statItem("DL",    fmt(lifter.deadlift), hl("deadlift"))}
           <div class="sep"></div>
-          ${statItem("Total", fmt(lifter.total))}
+          ${statItem("Total", fmt(lifter.total), hl("total"))}
           <div class="sep"></div>
-          ${statItem("DOTS",  fmtDots(lifter.dots), "dots-val " + dotsHL)}
+          ${statItem("DOTS",  fmtDots(lifter.dots), "dots-val" + hl("dots"))}
         </div>
       </div>
     </article>`;
@@ -481,13 +504,47 @@
   function render() {
     const container = document.getElementById("leaderboard");
     if (!container) return;
-    const list = getList();
-    const dots = list.map(l => l.dots);
-    const min = Math.min(...dots), max = Math.max(...dots);
+    paintControls();
+    const list = getStaticList();
+    if (!list.length) {
+      container.innerHTML = `<p class="board-empty">No lifters match this filter yet.</p>`;
+      return;
+    }
+    const vals = list.map(l => SORTS[sortKey].get(l) || 0);
+    const min = Math.min(...vals), max = Math.max(...vals);
     container.innerHTML = list.map((l, i) => renderRow(l, i + 1, min, max)).join("");
     container.querySelectorAll(".lb-row").forEach((row, i) => {
-      row.style.animationDelay = `${i * 35}ms`;
+      row.style.animationDelay = `${Math.min(i, 20) * 25}ms`;
     });
+  }
+
+  // Keep the buttons, column headers and the screen-reader summary in step
+  function paintControls() {
+    document.querySelectorAll("[data-sort]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.sort === sortKey)));
+    document.querySelectorAll("[data-sex]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.sex === sexFilter)));
+    document.querySelectorAll(".table-header [data-col]").forEach(h => h.classList.toggle("is-sorted", h.dataset.col === sortKey));
+    // Men / Women only appears once the refresh has found lifters' sex
+    const sexGroup = document.getElementById("sex-filter");
+    if (sexGroup) sexGroup.hidden = !LIFTERS.some(l => l.sex);
+    const status = document.getElementById("board-status");
+    if (status) status.textContent = `Ranked by ${SORTS[sortKey].label}, ${SEXES[sexFilter].toLowerCase()}.`;
+  }
+
+  function initBoardControls() {
+    try {
+      const saved = JSON.parse(localStorage.getItem("implexus-board") || "{}");
+      if (SORTS[saved.sort]) sortKey = saved.sort;
+      if (SEXES[saved.sex]) sexFilter = saved.sex;
+    } catch (_) { /* no storage: defaults */ }
+    const save = () => {
+      try { localStorage.setItem("implexus-board", JSON.stringify({ sort: sortKey, sex: sexFilter })); } catch (_) {}
+    };
+    document.querySelectorAll("[data-sort]").forEach(b => b.addEventListener("click", () => {
+      sortKey = b.dataset.sort; save(); render();
+    }));
+    document.querySelectorAll("[data-sex]").forEach(b => b.addEventListener("click", () => {
+      sexFilter = b.dataset.sex; save(); render();
+    }));
   }
 
   // ── Dynamic mode ──────────────────────────────────────────────
@@ -776,7 +833,7 @@
       const r = e.lifter_id != null ? rosterById.get(e.lifter_id) : null;
       const onBoard = r ? LIFTERS.find(l => l.slug === r.slug) : null;
       return { name: onBoard ? onBoard.name : e.name, dots: onBoard ? onBoard.dots : null };
-    }).sort((a, b) => (b.dots ?? -1) - (a.dots ?? -1));
+    }).sort((a, b) => (b.dots != null ? b.dots : -1) - (a.dots != null ? a.dots : -1));
 
     // A 10-segment "prep" bar over an 8-week build: fuller as the day nears
     const filled = Math.max(1, Math.min(10, Math.round(10 * (1 - days / 56))));
@@ -995,6 +1052,7 @@
     initTheme();
     initLegacy();
     initDynamic();
+    initBoardControls();
     render();
     setUpdatedLine();       // show real refresh date if available
     restoreFromHash();      // re-apply state (dynamic by default)
