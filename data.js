@@ -21,7 +21,7 @@ const LIFTERS = [
     name: "Mike Jones",
     slug: "mikejones1",
     ig: "mikejoneswigan",
-    squat: 350, bench: 202.5, deadlift: 355, total: 902.5, dots: 535.63,
+    squat: 350, bench: 202.5, deadlift: 360, total: 902.5, dots: 535.63,
     fed: "GPU", equip: "Wraps", bodyweight: "109.4",
   },
   {
@@ -164,6 +164,13 @@ const LIFTERS = [
     squat: 122.5, bench: 62.5, deadlift: 155, total: 340, dots: 367.1,
     fed: "EPA", equip: "Raw", bodyweight: "62.6",
   },
+  {
+    name: "Violet Clarke",
+    slug: "violetclarkewaller",
+    ig: null,
+    squat: 112.5, bench: 90, deadlift: 132.5, total: 317.5, dots: 350.24,
+    fed: "BP", equip: "Raw", bodyweight: "56.8",
+  },
 
   // ── LEGACY MEMBERS ──────────────────────────────────────────
   {
@@ -178,8 +185,8 @@ const LIFTERS = [
     name: "Kai Richardson",
     slug: "kairichardson",
     ig: "koach_kai",
-    squat: 215, bench: 145, deadlift: 300, total: 642.5, dots: 450.21,
-    fed: "EPA", equip: "Raw", bodyweight: "76.9",
+    squat: 215, bench: 145, deadlift: 300, total: 655, dots: 469.51,
+    fed: "WRPF-UK", equip: "Wraps", bodyweight: "75.1",
     legacy: true,
   },
   {

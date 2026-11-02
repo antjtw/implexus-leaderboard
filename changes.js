@@ -14,7 +14,7 @@
 //   ageing out after 7 days. A new PB for a lifter overrides their older one.
 
 const CHANGES = {
-  "generated": "2026-11-01T16:56:11.888Z",
+  "generated": "2026-11-02T20:33:21.908Z",
   "baselineDate": "2026-10-27T16:05:39.943Z",
   "prevRankActive": {
     "wyliesung": 1,
@@ -114,12 +114,12 @@ const CHANGES = {
     "victoriahart": 5,
     "chrisonuoha": 6,
     "gerryleepierre": 7,
-    "genevievecollins": 8,
-    "chrisjennings": 9,
-    "joshhinchcliffe": 10,
-    "benthornes": 11,
-    "karldaniel": 12,
-    "kairichardson": 13,
+    "kairichardson": 8,
+    "genevievecollins": 9,
+    "chrisjennings": 10,
+    "joshhinchcliffe": 11,
+    "benthornes": 12,
+    "karldaniel": 13,
     "peterking1": 14,
     "bradycrooks": 15,
     "anthonymclaughlin1": 16,
@@ -170,7 +170,8 @@ const CHANGES = {
     "robjacobs",
     "johncousins1",
     "leemccafferty",
-    "chloeboomer"
+    "chloeboomer",
+    "violetclarkewaller"
   ],
   "rosterAll": [
     "wyliesung",
@@ -212,9 +213,12 @@ const CHANGES = {
     "maxguo",
     "victoriahart",
     "joshhinchcliffe",
-    "benthornes"
+    "benthornes",
+    "violetclarkewaller"
   ],
-  "arrivals": [],
+  "arrivals": [
+    "violetclarkewaller"
+  ],
   "departures": [],
   "pbEvents": [
     {
@@ -270,6 +274,36 @@ const CHANGES = {
         "to": 267.53
       },
       "date": "2026-11-01T16:56:11.888Z"
+    },
+    {
+      "slug": "mikejones1",
+      "name": "Mike Jones",
+      "improved": {
+        "deadlift": {
+          "from": 355,
+          "to": 360
+        }
+      },
+      "dots": {
+        "from": 535.63,
+        "to": 535.63
+      },
+      "date": "2026-11-02T20:33:21.908Z"
+    },
+    {
+      "slug": "kairichardson",
+      "name": "Kai Richardson",
+      "improved": {
+        "total": {
+          "from": 642.5,
+          "to": 655
+        }
+      },
+      "dots": {
+        "from": 450.21,
+        "to": 469.51
+      },
+      "date": "2026-11-02T20:33:21.908Z"
     }
   ]
 };
