@@ -1795,3 +1795,22 @@ main button:focus-visible,
   .board-controls { padding: 0 16px 16px; }
   .seg-btn { padding: 0 14px; }
 }
+
+/* ── Recent PB arrow (list view and TV) ─────────────────── */
+.pb-up {
+  display: inline-block;
+  margin-left: 0.18em;
+  font-size: 0.55em;
+  line-height: 1;
+  vertical-align: 0.45em;
+  color: #36c46b;
+  font-weight: 700;
+}
+
+/* ── TV: the figure the board is sorted by ──────────────── */
+.dyn-stat-value.is-sorted { color: #FFD500; font-weight: 800; }
+.dyn-view-label {
+  margin-right: 1em;
+  color: #FFD500;
+  opacity: 0.85;
+}

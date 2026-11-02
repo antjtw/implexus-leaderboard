@@ -317,9 +317,38 @@
   };
 
   // ── Data helpers ─────────────────────────────────────────────
+  // The board's lifters in order. Both views use it, so the TV shows whatever
+  // sort and men/women filter was last chosen on the list view (this device).
   function getList() {
-    return (showLegacy ? [...LIFTERS] : LIFTERS.filter(l => !l.legacy))
-      .sort((a, b) => b.dots - a.dots);
+    const list = getStaticList();
+    if (list.length) return list;
+    // A filter that leaves no one would blank the TV: show everyone instead
+    return (showLegacy ? [...LIFTERS] : LIFTERS.filter(l => !l.legacy)).sort((a, b) => b.dots - a.dots);
+  }
+
+  // ── Recent PBs: which figures went up in the last 7 days ─────
+  // From the PB events in changes.js; used for the small green arrows.
+  function recentPbs(slug) {
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const out = {};
+    (CH.pbEvents || []).forEach(ev => {
+      if (ev.slug !== slug || !ev.date || new Date(ev.date).getTime() < cutoff) return;
+      Object.keys(ev.improved || {}).forEach(k => { out[k] = true; });
+      if (ev.dots && ev.dots.to > ev.dots.from + 0.005) out.dots = true;
+    });
+    return out;
+  }
+
+  function pbArrow(pbs, key) {
+    return pbs[key] ? `<span class="pb-up" title="New PB this week" aria-label="new PB this week">▲</span>` : "";
+  }
+
+  // Shown on the TV page when the list isn't the default DOTS / everyone
+  function viewLabel() {
+    const parts = [];
+    if (sortKey !== "dots") parts.push(SORTS[sortKey].label);
+    if (sexFilter !== "all") parts.push(SEXES[sexFilter]);
+    return parts.join(" · ");
   }
 
   // Weekly change data (from changes.js). Falls back gracefully if absent.
@@ -455,8 +484,10 @@
 
   function getStaticList() {
     const get = SORTS[sortKey].get;
+    // Men / Women only applies once the data has lifters' sex
+    const bySex = sexFilter !== "all" && LIFTERS.some(l => l.sex);
     return (showLegacy ? [...LIFTERS] : LIFTERS.filter(l => !l.legacy))
-      .filter(l => sexFilter === "all" || l.sex === sexFilter)
+      .filter(l => !bySex || l.sex === sexFilter)
       .sort((a, b) => (get(b) || 0) - (get(a) || 0) || b.dots - a.dots);
   }
 
@@ -469,6 +500,8 @@
     const arrows = sortKey === "dots" && sexFilter === "all";
     // The figure the board is sorted by gets the yellow treatment
     const hl = key => key === sortKey ? (isTop3 ? " dots-highlight is-sorted" : " is-sorted") : "";
+    const pbs = recentPbs(lifter.slug);
+    const v = (key, text) => text + pbArrow(pbs, key);
 
     return `
     <article class="lb-row ${rowClass}" data-rank="${rank}">
@@ -481,21 +514,21 @@
             ${legacyBadge}${igLink(lifter.ig)}
           </div>
         </div>
-        <span class="col-lift desktop-only${hl("squat")}">${fmt(lifter.squat)}</span>
-        <span class="col-lift desktop-only${hl("bench")}">${fmt(lifter.bench)}</span>
-        <span class="col-lift desktop-only${hl("deadlift")}">${fmt(lifter.deadlift)}</span>
-        <span class="col-total desktop-only${hl("total")}">${fmt(lifter.total)}</span>
-        <span class="col-dots desktop-only${hl("dots")}">${fmtDots(lifter.dots)}</span>
+        <span class="col-lift desktop-only${hl("squat")}">${v("squat", fmt(lifter.squat))}</span>
+        <span class="col-lift desktop-only${hl("bench")}">${v("bench", fmt(lifter.bench))}</span>
+        <span class="col-lift desktop-only${hl("deadlift")}">${v("deadlift", fmt(lifter.deadlift))}</span>
+        <span class="col-total desktop-only${hl("total")}">${v("total", fmt(lifter.total))}</span>
+        <span class="col-dots desktop-only${hl("dots")}">${v("dots", fmtDots(lifter.dots))}</span>
         <div class="stats-mobile mobile-only">
-          ${statItem("SQ",    fmt(lifter.squat), hl("squat"))}
+          ${statItem("SQ",    v("squat", fmt(lifter.squat)), hl("squat"))}
           <div class="sep"></div>
-          ${statItem("BP",    fmt(lifter.bench), hl("bench"))}
+          ${statItem("BP",    v("bench", fmt(lifter.bench)), hl("bench"))}
           <div class="sep"></div>
-          ${statItem("DL",    fmt(lifter.deadlift), hl("deadlift"))}
+          ${statItem("DL",    v("deadlift", fmt(lifter.deadlift)), hl("deadlift"))}
           <div class="sep"></div>
-          ${statItem("Total", fmt(lifter.total), hl("total"))}
+          ${statItem("Total", v("total", fmt(lifter.total)), hl("total"))}
           <div class="sep"></div>
-          ${statItem("DOTS",  fmtDots(lifter.dots), "dots-val" + hl("dots"))}
+          ${statItem("DOTS",  v("dots", fmtDots(lifter.dots)), "dots-val" + hl("dots"))}
         </div>
       </div>
     </article>`;
@@ -632,8 +665,8 @@
   // ── Page slide ────────────────────────────────────────────────
   function showPageSlide({ pageIndex, pageCount }) {
     const list = getList();
-    const dots = list.map(l => l.dots);
-    const min = Math.min(...dots), max = Math.max(...dots);
+    const vals = list.map(l => SORTS[sortKey].get(l) || 0);
+    const min = Math.min(...vals), max = Math.max(...vals);
 
     const per = CONFIG.per_page;
     const start = pageIndex * per;
@@ -658,7 +691,7 @@
 
     overlay.innerHTML = `
       <div class="dyn-page-header">
-        <div class="dyn-page-indicator">${pageIndex + 1} / ${pageCount}</div>
+        <div class="dyn-page-indicator">${viewLabel() ? `<span class="dyn-view-label">${esc(viewLabel())}</span>` : ""}${pageIndex + 1} / ${pageCount}</div>
       </div>
       <div class="dyn-page-wrap">
         <div class="dyn-list dyn-page-list" id="dyn-page-list">
@@ -683,28 +716,30 @@
   function renderDynRow(lifter, rank, min, max) {
     const rankClass = rank === 1 ? "rank-gold" : rank === 2 ? "rank-silver" : rank === 3 ? "rank-bronze" : "";
     const isTop3 = rank <= 3;
-    const dotsHL = isTop3 ? "dots-highlight" : "";
+    const dotsHL = isTop3 && sortKey === "dots" ? "dots-highlight" : "";
     const legacyTag = lifter.legacy ? `<span class="dyn-legacy-tag">Legacy</span>` : "";
-    const width = barWidth(lifter.dots, min, max);
+    const width = barWidth(SORTS[sortKey].get(lifter) || 0, min, max);
+    const arrows = sortKey === "dots" && sexFilter === "all";
+    const pbs = recentPbs(lifter.slug);
 
-    const stat = (label, value) => `
+    const stat = (label, key) => `
       <span class="dyn-stat">
         <span class="dyn-stat-label">${label}</span>
-        <span class="dyn-stat-value">${fmt(value)}</span>
+        <span class="dyn-stat-value${key === sortKey ? " is-sorted" : ""}">${fmt(lifter[key])}${pbArrow(pbs, key)}</span>
       </span>`;
 
     return `
     <div class="dyn-row" data-rank="${rank}">
       <div class="dyn-bar" style="width:${width}%"></div>
-      <span class="dyn-rank ${rankClass}">${rank}${movementArrow(lifter.slug, rank)}</span>
+      <span class="dyn-rank ${rankClass}">${rank}${arrows ? movementArrow(lifter.slug, rank) : ""}</span>
       <span class="dyn-name">${esc(lifter.name)}${legacyTag}</span>
       <span class="dyn-stats">
-        ${stat("SQ", lifter.squat)}
-        ${stat("BP", lifter.bench)}
-        ${stat("DL", lifter.deadlift)}
-        ${stat("Total", lifter.total)}
+        ${stat("SQ", "squat")}
+        ${stat("BP", "bench")}
+        ${stat("DL", "deadlift")}
+        ${stat("Total", "total")}
       </span>
-      <span class="dyn-dots ${dotsHL}">${fmtDots(lifter.dots)}</span>
+      <span class="dyn-dots ${dotsHL}">${fmtDots(lifter.dots)}${pbArrow(pbs, "dots")}</span>
     </div>`;
   }
 
@@ -1016,13 +1051,9 @@
   }
 
   // ── Inits ─────────────────────────────────────────────────────
+  // Always dark, whatever the device prefers
   function initTheme() {
-    const root = document.documentElement;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    root.dataset.theme = mq.matches ? "dark" : "light";
-    mq.addEventListener("change", e => {
-      root.dataset.theme = e.matches ? "dark" : "light";
-    });
+    document.documentElement.dataset.theme = "dark";
   }
 
   function applyLegacy(on) {

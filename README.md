@@ -167,7 +167,10 @@ node scripts/scrape.mjs
 On the list view, sort by DOTS, Total, Squat, Bench or Deadlift, and show
 everyone, men or women. The choice is remembered on that device. Weekly
 movement arrows only show on the default DOTS view of everyone, since that's
-what they measure. The TV always shows DOTS for everyone.
+what they measure. Dynamic mode on the same device follows the same choice
+(it says which in the corner of the TV), so set the list view on the TV itself
+to change what the TV shows. A small green ▲ marks any lift, total or DOTS that
+went up in the last week, on both the list and the TV. The site is always dark.
 
 Sex comes from each lifter's OpenPowerlifting CSV during the daily refresh,
 falling back to weight classes that only exist for one sex. The Men / Women
