@@ -3,6 +3,7 @@
 // For lifters with Raw + Wraps entries, best DOTS row determines ranking;
 // individual lift PBs are taken across both equip categories.
 // legacy: true = former member, shown only when legacy filter is on.
+// sex: "M" / "F" from OpenPowerlifting, for the Men / Women filter.
 //
 // This file is written automatically every day by scripts/scrape.mjs. Once
 // Supabase is connected, the roster (who's on the board, names, Instagram,
@@ -16,6 +17,7 @@ const LIFTERS = [
     ig: "wyliesung28",
     squat: 337.5, bench: 200, deadlift: 357.5, total: 890, dots: 562.53,
     fed: "GPU", equip: "Wraps", bodyweight: "94.3",
+    sex: "M",
   },
   {
     name: "Mike Jones",
@@ -23,6 +25,7 @@ const LIFTERS = [
     ig: "mikejoneswigan",
     squat: 350, bench: 202.5, deadlift: 360, total: 902.5, dots: 535.63,
     fed: "GPU", equip: "Wraps", bodyweight: "109.4",
+    sex: "M",
   },
   {
     name: "Jurassic Gen",
@@ -30,6 +33,7 @@ const LIFTERS = [
     ig: "swole_mami",
     squat: 177.5, bench: 97.5, deadlift: 192.5, total: 467.5, dots: 466.15,
     fed: "EPA", equip: "Raw", bodyweight: "71.8",
+    sex: "F",
   },
   {
     name: "Chris Jennings",
@@ -37,6 +41,7 @@ const LIFTERS = [
     ig: "chris_implexus",
     squat: 202.5, bench: 140, deadlift: 245, total: 587.5, dots: 460.84,
     fed: "BP", equip: "Raw", bodyweight: "65.9",
+    sex: "M",
   },
   {
     name: "Ant White",
@@ -44,6 +49,7 @@ const LIFTERS = [
     ig: "shred.kemper",
     squat: 250, bench: 137.5, deadlift: 280, total: 645, dots: 411.24,
     fed: "EPA", equip: "Raw", bodyweight: "92.6",
+    sex: "M",
   },
   {
     name: "Nick Johnstone",
@@ -51,6 +57,7 @@ const LIFTERS = [
     ig: "njfullpower",
     squat: 247.5, bench: 180, deadlift: 242.5, total: 667.5, dots: 408.42,
     fed: "EPA", equip: "Raw", bodyweight: "101.4",
+    sex: "M",
   },
   {
     name: "Talia Firth",
@@ -58,6 +65,7 @@ const LIFTERS = [
     ig: "talsssssx",
     squat: 177.5, bench: 102.5, deadlift: 187.5, total: 465, dots: 406.39,
     fed: "BPU", equip: "Wraps", bodyweight: "87.4",
+    sex: "F",
   },
   {
     name: "Steve Whittles",
@@ -65,6 +73,7 @@ const LIFTERS = [
     ig: "mrnorfgym",
     squat: 235, bench: 150, deadlift: 270, total: 650, dots: 395.43,
     fed: "WRPF-UK", equip: "Wraps", bodyweight: "102.8",
+    sex: "M",
   },
   {
     name: "Will Webb",
@@ -72,6 +81,7 @@ const LIFTERS = [
     ig: "willwebbpower",
     squat: 252.5, bench: 127.5, deadlift: 260, total: 630, dots: 385.53,
     fed: "BPU", equip: "Wraps", bodyweight: "98.6",
+    sex: "M",
   },
   {
     name: "Ash Keeble",
@@ -79,6 +89,7 @@ const LIFTERS = [
     ig: "ashlinglifts",
     squat: 155, bench: 90, deadlift: 167.5, total: 412.5, dots: 400.64,
     fed: "EPA", equip: "Raw", bodyweight: "75.4",
+    sex: "F",
   },
   {
     name: "Jotatas Bravas",
@@ -86,6 +97,7 @@ const LIFTERS = [
     ig: "joecurzon93",
     squat: 242.5, bench: 125, deadlift: 250, total: 615, dots: 378.87,
     fed: "WRPF-UK", equip: "Wraps", bodyweight: "99.8",
+    sex: "M",
   },
   {
     name: "Toby Solomon",
@@ -93,6 +105,7 @@ const LIFTERS = [
     ig: "toby_solomon_",
     squat: 210, bench: 130, deadlift: 255, total: 595, dots: 383.66,
     fed: "EPA", equip: "Raw", bodyweight: "90.5",
+    sex: "M",
   },
   {
     name: "Matt Anderson",
@@ -100,6 +113,7 @@ const LIFTERS = [
     ig: "mattslifts",
     squat: 160, bench: 110, deadlift: 215, total: 485, dots: 329.44,
     fed: "EPA", equip: "Raw", bodyweight: "82.1",
+    sex: "M",
   },
   {
     name: "Owen Crisp",
@@ -107,6 +121,7 @@ const LIFTERS = [
     ig: "owen_crisp",
     squat: 172.5, bench: 102.5, deadlift: 202.5, total: 467.5, dots: 327.69,
     fed: "WRPF-UK", equip: "Raw", bodyweight: "76.5",
+    sex: "M",
   },
   {
     name: "Jodie Barnsley",
@@ -114,6 +129,7 @@ const LIFTERS = [
     ig: null,
     squat: 117.5, bench: 70, deadlift: 122.5, total: 307.5, dots: 295.36,
     fed: "WRPF-UK", equip: "Raw", bodyweight: "73.5",
+    sex: "F",
   },
   {
     name: "Laura Jones",
@@ -121,6 +137,7 @@ const LIFTERS = [
     ig: "lauraelizabeth193",
     squat: 87.5, bench: 47.5, deadlift: 122.5, total: 257.5, dots: 259.16,
     fed: "WRPF-UK", equip: "Raw", bodyweight: "70.6",
+    sex: "F",
   },
   {
     name: "Jack Larkins-Thomas",
@@ -128,6 +145,7 @@ const LIFTERS = [
     ig: "jackliftingstuff",
     squat: 180, bench: 92.5, deadlift: 195, total: 467.5, dots: 267.53,
     fed: "WRPF-UK", equip: "Raw", bodyweight: "121.3",
+    sex: "M",
   },
   {
     name: "Dr. Pete King",
@@ -135,6 +153,7 @@ const LIFTERS = [
     ig: "kingpete__",
     squat: 220, bench: 155, deadlift: 270, total: 630, dots: 420.14,
     fed: "BPU", equip: "Raw", bodyweight: "84.8",
+    sex: "M",
   },
   {
     name: "Rob Jacobs",
@@ -142,6 +161,7 @@ const LIFTERS = [
     ig: "Robj1190",
     squat: 195, bench: 97.5, deadlift: 200, total: 492.5, dots: 320.08,
     fed: "WRPF-UK", equip: "Raw", bodyweight: "89.1",
+    sex: "M",
   },
   {
     name: "John Cousins",
@@ -149,6 +169,7 @@ const LIFTERS = [
     ig: null,
     squat: 170, bench: 125, deadlift: 192.5, total: 482.5, dots: 326.39,
     fed: "EPA", equip: "Raw", bodyweight: "82.7",
+    sex: "M",
   },
   {
     name: "Lee McCafferty",
@@ -156,6 +177,7 @@ const LIFTERS = [
     ig: "mccaff_strength_system",
     squat: 267.5, bench: 165, deadlift: 250, total: 677.5, dots: 385.41,
     fed: "WPC", equip: "Wraps", bodyweight: "123.5",
+    sex: "M",
   },
   {
     name: "Chloe Boomer",
@@ -163,6 +185,7 @@ const LIFTERS = [
     ig: "boomer_strength",
     squat: 122.5, bench: 62.5, deadlift: 155, total: 340, dots: 367.1,
     fed: "EPA", equip: "Raw", bodyweight: "62.6",
+    sex: "F",
   },
   {
     name: "Violet Clarke",
@@ -170,6 +193,7 @@ const LIFTERS = [
     ig: null,
     squat: 112.5, bench: 90, deadlift: 132.5, total: 317.5, dots: 350.24,
     fed: "BP", equip: "Raw", bodyweight: "56.8",
+    sex: "F",
   },
 
   // ── LEGACY MEMBERS ──────────────────────────────────────────
@@ -179,6 +203,7 @@ const LIFTERS = [
     ig: "finndavispl",
     squat: 200, bench: 125, deadlift: 220, total: 545, dots: 347.84,
     fed: "EPA", equip: "Raw", bodyweight: "92.4",
+    sex: "M",
     legacy: true,
   },
   {
@@ -187,6 +212,7 @@ const LIFTERS = [
     ig: "koach_kai",
     squat: 215, bench: 145, deadlift: 300, total: 655, dots: 469.51,
     fed: "WRPF-UK", equip: "Wraps", bodyweight: "75.1",
+    sex: "M",
     legacy: true,
   },
   {
@@ -195,6 +221,7 @@ const LIFTERS = [
     ig: "leo.hannan",
     squat: 200, bench: 127.5, deadlift: 250, total: 572.5, dots: 388.07,
     fed: "EPA", equip: "Raw", bodyweight: "82.4",
+    sex: "M",
     legacy: true,
   },
   {
@@ -203,6 +230,7 @@ const LIFTERS = [
     ig: "lush_sa94",
     squat: 205, bench: 142.5, deadlift: 215, total: 562.5, dots: 326.22,
     fed: "EPA", equip: "Raw", bodyweight: "116.6",
+    sex: "M",
     legacy: true,
   },
   {
@@ -211,6 +239,7 @@ const LIFTERS = [
     ig: "chris_onu",
     squat: 280, bench: 150, deadlift: 340, total: 760, dots: 487.65,
     fed: "EPF", equip: "Raw", bodyweight: "91.4",
+    sex: "M",
     legacy: true,
   },
   {
@@ -219,6 +248,7 @@ const LIFTERS = [
     ig: "alex.shortland",
     squat: 240, bench: 155, deadlift: 270, total: 665, dots: 383.8,
     fed: "BPU", equip: "Wraps", bodyweight: "118.2",
+    sex: "M",
     legacy: true,
   },
   {
@@ -227,6 +257,7 @@ const LIFTERS = [
     ig: null,
     squat: 105, bench: 47.5, deadlift: 150, total: 295, dots: 307.61,
     fed: "EPA", equip: "Raw", bodyweight: "66.3",
+    sex: "F",
     legacy: true,
   },
   {
@@ -235,6 +266,7 @@ const LIFTERS = [
     ig: "rpturnbull",
     squat: 170, bench: 112.5, deadlift: 230, total: 512.5, dots: 314.64,
     fed: "EPA", equip: "Raw", bodyweight: "100.6",
+    sex: "M",
     legacy: true,
   },
   {
@@ -243,6 +275,7 @@ const LIFTERS = [
     ig: "gerryleepierre",
     squat: 305, bench: 182.5, deadlift: 305, total: 785, dots: 483.49,
     fed: "BPU", equip: "Wraps", bodyweight: "99.8",
+    sex: "M",
     legacy: true,
   },
   {
@@ -251,6 +284,7 @@ const LIFTERS = [
     ig: "only_2_ks",
     squat: 240, bench: 160, deadlift: 300, total: 700, dots: 452.62,
     fed: "BPU", equip: "Wraps", bodyweight: "90",
+    sex: "M",
     legacy: true,
   },
   {
@@ -259,6 +293,7 @@ const LIFTERS = [
     ig: null,
     squat: 245, bench: 152.5, deadlift: 255, total: 652.5, dots: 415.15,
     fed: "EPA", equip: "Raw", bodyweight: "93",
+    sex: "M",
     legacy: true,
   },
   {
@@ -267,6 +302,7 @@ const LIFTERS = [
     ig: "fat_tony2",
     squat: 245, bench: 152.5, deadlift: 300, total: 680, dots: 411.38,
     fed: "EPA", equip: "Raw", bodyweight: "104.2",
+    sex: "M",
     legacy: true,
   },
   {
@@ -275,6 +311,7 @@ const LIFTERS = [
     ig: "riddhiculous.strength",
     squat: 220, bench: 127.5, deadlift: 242.5, total: 582.5, dots: 408.87,
     fed: "BP", equip: "Raw", bodyweight: "73",
+    sex: "M",
     legacy: true,
   },
   {
@@ -283,6 +320,7 @@ const LIFTERS = [
     ig: "anneinthegym",
     squat: 177.5, bench: 105, deadlift: 195, total: 477.5, dots: 521.22,
     fed: "IPF", equip: "Raw", bodyweight: "61.5",
+    sex: "F",
     legacy: true,
   },
   {
@@ -291,6 +329,7 @@ const LIFTERS = [
     ig: "maxguo83kg",
     squat: 255, bench: 177.5, deadlift: 287.5, total: 720, dots: 488.39,
     fed: "BP", equip: "Raw", bodyweight: "82.3",
+    sex: "M",
     legacy: true,
   },
   {
@@ -299,6 +338,7 @@ const LIFTERS = [
     ig: "vicsquats_",
     squat: 178.5, bench: 102.5, deadlift: 172.5, total: 450, dots: 488.26,
     fed: "BP", equip: "Raw", bodyweight: "62.1",
+    sex: "F",
     legacy: true,
   },
   {
@@ -307,6 +347,7 @@ const LIFTERS = [
     ig: "josh_hinchcliffe_pl",
     squat: 232.5, bench: 160, deadlift: 280, total: 670, dots: 456.45,
     fed: "PWFL", equip: "Raw", bodyweight: "81.6",
+    sex: "M",
     legacy: true,
   },
   {
@@ -315,6 +356,16 @@ const LIFTERS = [
     ig: "wakefield_strength_academy",
     squat: 290, bench: 160, deadlift: 317.5, total: 752.5, dots: 453.92,
     fed: "BPU", equip: "Wraps", bodyweight: "104.9",
+    sex: "M",
+    legacy: true,
+  },
+  {
+    name: "Ade Omisakin",
+    slug: "adeomisakin",
+    ig: null,
+    squat: 312.5, bench: 205, deadlift: 365, total: 882.5, dots: 597.8,
+    fed: "IPF", equip: "Raw", bodyweight: "82.5",
+    sex: "M",
     legacy: true,
   },
 

@@ -14,8 +14,8 @@
 //   ageing out after 7 days. A new PB for a lifter overrides their older one.
 
 const CHANGES = {
-  "generated": "2026-11-02T20:33:21.908Z",
-  "baselineDate": "2026-10-27T16:05:39.943Z",
+  "generated": "2026-11-03T18:07:56.979Z",
+  "baselineDate": "2026-11-03T18:07:56.979Z",
   "prevRankActive": {
     "wyliesung": 1,
     "mikejones1": 2,
@@ -32,13 +32,14 @@ const CHANGES = {
     "tobysolomon": 13,
     "joecurzon": 14,
     "chloeboomer": 15,
-    "matthewanderson2": 16,
-    "owencrisp": 17,
-    "johncousins1": 18,
-    "robjacobs": 19,
-    "jodiebarnsley": 20,
-    "jacklarkinsthomas": 21,
-    "laurajones6": 22
+    "violetclarkewaller": 16,
+    "matthewanderson2": 17,
+    "owencrisp": 18,
+    "johncousins1": 19,
+    "robjacobs": 20,
+    "jodiebarnsley": 21,
+    "jacklarkinsthomas": 22,
+    "laurajones6": 23
   },
   "prevRankAll": {
     "wyliesung": 1,
@@ -48,12 +49,12 @@ const CHANGES = {
     "victoriahart": 5,
     "chrisonuoha": 6,
     "gerryleepierre": 7,
-    "genevievecollins": 8,
-    "chrisjennings": 9,
-    "joshhinchcliffe": 10,
-    "benthornes": 11,
-    "karldaniel": 12,
-    "kairichardson": 13,
+    "kairichardson": 8,
+    "genevievecollins": 9,
+    "chrisjennings": 10,
+    "joshhinchcliffe": 11,
+    "benthornes": 12,
+    "karldaniel": 13,
     "peterking1": 14,
     "bradycrooks": 15,
     "anthonymclaughlin1": 16,
@@ -70,17 +71,18 @@ const CHANGES = {
     "tobysolomon": 27,
     "joecurzon": 28,
     "chloeboomer": 29,
-    "finndavis": 30,
-    "matthewanderson2": 31,
-    "owencrisp": 32,
-    "johncousins1": 33,
-    "samlusher": 34,
-    "robjacobs": 35,
-    "roryturnbull": 36,
-    "kellybroadbent": 37,
-    "jodiebarnsley": 38,
-    "jacklarkinsthomas": 39,
-    "laurajones6": 40
+    "violetclarkewaller": 30,
+    "finndavis": 31,
+    "matthewanderson2": 32,
+    "owencrisp": 33,
+    "johncousins1": 34,
+    "samlusher": 35,
+    "robjacobs": 36,
+    "roryturnbull": 37,
+    "kellybroadbent": 38,
+    "jodiebarnsley": 39,
+    "jacklarkinsthomas": 40,
+    "laurajones6": 41
   },
   "curRankActive": {
     "wyliesung": 1,
@@ -98,13 +100,14 @@ const CHANGES = {
     "tobysolomon": 13,
     "joecurzon": 14,
     "chloeboomer": 15,
-    "matthewanderson2": 16,
-    "owencrisp": 17,
-    "johncousins1": 18,
-    "robjacobs": 19,
-    "jodiebarnsley": 20,
-    "jacklarkinsthomas": 21,
-    "laurajones6": 22
+    "violetclarkewaller": 16,
+    "matthewanderson2": 17,
+    "owencrisp": 18,
+    "johncousins1": 19,
+    "robjacobs": 20,
+    "jodiebarnsley": 21,
+    "jacklarkinsthomas": 22,
+    "laurajones6": 23
   },
   "curRankAll": {
     "wyliesung": 1,
@@ -136,17 +139,18 @@ const CHANGES = {
     "tobysolomon": 27,
     "joecurzon": 28,
     "chloeboomer": 29,
-    "finndavis": 30,
-    "matthewanderson2": 31,
-    "owencrisp": 32,
-    "johncousins1": 33,
-    "samlusher": 34,
-    "robjacobs": 35,
-    "roryturnbull": 36,
-    "kellybroadbent": 37,
-    "jodiebarnsley": 38,
-    "jacklarkinsthomas": 39,
-    "laurajones6": 40
+    "violetclarkewaller": 30,
+    "finndavis": 31,
+    "matthewanderson2": 32,
+    "owencrisp": 33,
+    "johncousins1": 34,
+    "samlusher": 35,
+    "robjacobs": 36,
+    "roryturnbull": 37,
+    "kellybroadbent": 38,
+    "jodiebarnsley": 39,
+    "jacklarkinsthomas": 40,
+    "laurajones6": 41
   },
   "rosterActive": [
     "wyliesung",
@@ -214,11 +218,10 @@ const CHANGES = {
     "victoriahart",
     "joshhinchcliffe",
     "benthornes",
-    "violetclarkewaller"
+    "violetclarkewaller",
+    "adeomisakin"
   ],
-  "arrivals": [
-    "violetclarkewaller"
-  ],
+  "arrivals": [],
   "departures": [],
   "pbEvents": [
     {
