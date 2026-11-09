@@ -14,7 +14,7 @@
 //   ageing out after 7 days. A new PB for a lifter overrides their older one.
 
 const CHANGES = {
-  "generated": "2026-11-08T16:49:05.962Z",
+  "generated": "2026-11-09T21:10:17.529Z",
   "baselineDate": "2026-11-03T18:07:56.979Z",
   "prevRankActive": {
     "wyliesung": 1,
@@ -223,90 +223,5 @@ const CHANGES = {
   ],
   "arrivals": [],
   "departures": [],
-  "pbEvents": [
-    {
-      "slug": "laurajones6",
-      "name": "Laura Jones",
-      "improved": {
-        "squat": {
-          "from": 82.5,
-          "to": 87.5
-        },
-        "bench": {
-          "from": 45,
-          "to": 47.5
-        },
-        "deadlift": {
-          "from": 117.5,
-          "to": 122.5
-        },
-        "total": {
-          "from": 245,
-          "to": 257.5
-        }
-      },
-      "dots": {
-        "from": 245.62,
-        "to": 259.16
-      },
-      "date": "2026-11-01T16:56:11.888Z"
-    },
-    {
-      "slug": "jacklarkinsthomas",
-      "name": "Jack Larkins-Thomas",
-      "improved": {
-        "squat": {
-          "from": 160,
-          "to": 180
-        },
-        "bench": {
-          "from": 82.5,
-          "to": 92.5
-        },
-        "deadlift": {
-          "from": 180,
-          "to": 195
-        },
-        "total": {
-          "from": 422.5,
-          "to": 467.5
-        }
-      },
-      "dots": {
-        "from": 245.91,
-        "to": 267.53
-      },
-      "date": "2026-11-01T16:56:11.888Z"
-    },
-    {
-      "slug": "mikejones1",
-      "name": "Mike Jones",
-      "improved": {
-        "deadlift": {
-          "from": 355,
-          "to": 360
-        }
-      },
-      "dots": {
-        "from": 535.63,
-        "to": 535.63
-      },
-      "date": "2026-11-02T20:33:21.908Z"
-    },
-    {
-      "slug": "kairichardson",
-      "name": "Kai Richardson",
-      "improved": {
-        "total": {
-          "from": 642.5,
-          "to": 655
-        }
-      },
-      "dots": {
-        "from": 450.21,
-        "to": 469.51
-      },
-      "date": "2026-11-02T20:33:21.908Z"
-    }
-  ]
+  "pbEvents": []
 };
