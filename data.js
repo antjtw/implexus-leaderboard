@@ -195,6 +195,14 @@ const LIFTERS = [
     fed: "BP", equip: "Raw", bodyweight: "56.8",
     sex: "F",
   },
+  {
+    name: "Oliver Brameld",
+    slug: "oliverbrameld",
+    ig: null,
+    squat: 220, bench: 150, deadlift: 260, total: 620, dots: 412.18,
+    fed: "CommonwealthPF", equip: "Raw", bodyweight: "85.3",
+    sex: "M",
+  },
 
   // ── LEGACY MEMBERS ──────────────────────────────────────────
   {
