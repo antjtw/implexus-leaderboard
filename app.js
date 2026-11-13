@@ -49,24 +49,23 @@
 
   // ── Sparse-page captions ──────────────────────────────────────
   // Shown centred below the rows on a final leaderboard page with ≤4 lifters.
-  // Picked 80% from the wholesome group, 20% from the jokes group, fresh each
-  // time a sparse page appears.
-  const SPARSE_WHOLESOME = [
-    { text: "…and then the other 98% of the world, who don't lift at all." },
+  // One picked at random, fresh each time a sparse page appears.
+  const SPARSE_CAPTIONS = [
+    // Deadpan
+    { text: "Please return all plates. They will not do it themselves." },
+    { text: "If you can read this, you're resting between sets. Probably long enough now." },
+    { text: "Depth was judged. Feelings were not." },
+    { text: "Was it worth sacrificing your social life to become this mediocre?" },
+    // Inspiring
+    { text: "The iron never lies to you.", credit: "Henry Rollins" },
     { text: "Stronger people are harder to kill, and more useful generally.", credit: "Mark Rippetoe" },
-    { text: "Bottom of this board. Top of almost every other room." },
-    { text: "Last here. Lapping everyone still on the sofa." },
-    { text: "Every name here picks up heavy things on purpose. That alone makes them rare." },
-  ];
-  const SPARSE_JOKES = [
-    { text: "And despite all that, Joe still lives in Bradford." },
-    { text: "Despite what OpenPowerlifting says, Mike has bombed out of a competition." },
-    { text: "If Joe doesn't squat 250 by the end of the year, he has to shave his head." },
+    // In-jokes
+    { text: "Joe lives in Bradford." },
+    { text: "Mike has bombed out of a competition. OpenPowerlifting just doesn't know about it." },
   ];
 
   function pickSparseCaption() {
-    const group = Math.random() < 0.8 ? SPARSE_WHOLESOME : SPARSE_JOKES;
-    return group[Math.floor(Math.random() * group.length)];
+    return SPARSE_CAPTIONS[Math.floor(Math.random() * SPARSE_CAPTIONS.length)];
   }
 
   // Inline Implexus logo for dynamic mode. White letterforms use currentColor
