@@ -118,14 +118,6 @@
       }),
     },
     {
-      id: "gen-asteroid",
-      build: () => ({
-        a: realFighter("genevievecollins"),
-        b: { name: "The Asteroid That Killed The Dinosaurs", dots: 66, fed: "Space", equip: "10km Wide", bodyweight: "A Lot", fake: true },
-        caption: "M66,000,000 British Champion. Narrowly beating the Stegosaurus and the Diplodocus on the day.",
-      }),
-    },
-    {
       id: "wylie-julien",
       build: () => ({
         a: realFighter("wyliesung"),
