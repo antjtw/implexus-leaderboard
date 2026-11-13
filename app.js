@@ -118,14 +118,6 @@
       }),
     },
     {
-      id: "matt-sam",
-      build: () => ({
-        a: realFighter("matthewanderson2"),
-        b: realFighter("samlusher"),
-        caption: "They don't talk. The DOTS are 3.22 apart. Neither will let it go.",
-      }),
-    },
-    {
       id: "gen-asteroid",
       build: () => ({
         a: realFighter("genevievecollins"),
@@ -150,19 +142,6 @@
       }),
     },
     {
-      id: "toby-matt-destiny",
-      build: () => {
-        const toby = realFighter("tobysolomon");
-        const matt = realFighter("matthewanderson2");
-        if (!toby || !matt) return { a: null, b: null };
-        return {
-          a: { name: "Toby & Matt", dots: (toby.dots + matt.dots), fed: "Implexus", equip: "Inseparable", bodyweight: "—", team: true },
-          b: { name: "Their Destiny", dots: Infinity, fed: "Written", equip: "In The Stars", bodyweight: "—", fake: true },
-          caption: "Some bonds transcend the platform. Toby and Matt are not fighting destiny. They're holding hands with it.",
-        };
-      },
-    },
-    {
       id: "chris-image",
       build: () => ({
         a: realFighter("chrisjennings"),
@@ -170,70 +149,7 @@
              image: "img/chris-deadlift.jpeg" },
         caption: "One rep from 1st place and a 66kg-class deadlift record. It got away. Chris has not forgotten.",
       }),
-    },
-    {
-      id: "wylie-bloat",
-      build: () => ({
-        a: realFighter("wyliesung"),
-        b: { name: "The Pre-Comp Bloat", dots: 0, fed: "Hotel Room", equip: "Two Tubs", bodyweight: "Rising", fake: true,
-             image: "img/wylie-bloat.jpeg" },
-        caption: "Weigh-in done, the refeed begins. Wylie has the numbers. The bloat has the night off. Both are winning.",
-      }),
-    },
-    {
-      id: "ben-dempsey",
-      build: () => ({
-        a: realFighter("benthornes"),
-        b: { name: "Dempsey", dots: 462.29, fed: "EPF", equip: "Single", bodyweight: "103.6", fake: true },
-        caption: "The measuring stick. 8.37 in it. Ben's chasing.",
-      }),
-    },
-    {
-      id: "adam-excuses",
-      build: () => ({
-        a: { name: "Adam Harrison", dots: 0, fed: "DNS", equip: "Someday", bodyweight: "TBC", fake: true },
-        b: { name: "A List Of Excuses", dots: 999.99, fed: "Endless", equip: "Well-Rehearsed", bodyweight: "∞", fake: true },
-        caption: "Adam wants to compete. Adam also has a slightly tweaked back, a busy month, the wrong singlet, and a feeling it's not quite the right meet.",
-      }),
-    },
-    {
-      id: "everyone-curse240",
-      build: () => ({
-        a: { name: "Everyone", dots: 0, fed: "Implexus", equip: "All Of Us", bodyweight: "—", fake: true },
-        b: { name: "The Curse of 240", dots: 240, fed: "Unexplained", equip: "Squat", bodyweight: "240kg", fake: true },
-        caption: "They can squat more. The bar reads 240. It does not matter. The bar always wins.",
-      }),
-    },
-    {
-      id: "owen-breeze",
-      build: () => ({
-        a: realFighter("owencrisp"),
-        b: { name: "A Light Breeze", dots: 0, fed: "Weather", equip: "Gentle", bodyweight: "Featherweight", fake: true },
-        caption: "Owen makes weight with room to spare. A stiff gust is, frankly, a genuine threat.",
-      }),
-    },
-    {
-      id: "ant-vs-ant",
-      build: () => {
-        const white = realFighter("anthonywhite1");
-        const tony = realFighter("anthonymclaughlin1");
-        if (!white || !tony) return { a: null, b: null };
-        return {
-          a: white,
-          b: tony,
-          caption: "The Battle of the Ants. Two Anthonys, separated by a hair on DOTS — but Ant White edges it on GLP. Bragging rights remain contested.",
-        };
-      },
-    },
-    {
-      id: "jodie-blackbelt",
-      build: () => ({
-        a: realFighter("jodiebarnsley"),
-        b: { name: "Anyone Considering Arguing With Her", dots: 0, fed: "Unwise", equip: "Outmatched", bodyweight: "—", fake: true },
-        caption: "Squats, deadlifts, and a karate black belt. The leaderboard position is negotiable. She is not.",
-      }),
-    },
-  ];
+    },];
 
   // Roll for a joke rivalry. Returns a built joke or null.
   function rollJokeRivalry() {
