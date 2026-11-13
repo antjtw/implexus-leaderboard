@@ -3,10 +3,11 @@
  * Implexus Powerlifting — daily scraper
  *
  * Reads the roster (name, slug, ig, legacy) from Supabase, falling back to
- * data.js if Supabase isn't configured or can't be reached. Fetches every
- * lifter's OpenPowerlifting profile, re-derives PBs (squat/bench/deadlift/
- * total/DOTS) and the fed/equip/bodyweight from the competition row that
- * produced their best DOTS, then:
+ * data.js if Supabase isn't configured or can't be reached. For every lifter
+ * it downloads their OpenPowerlifting CSV (one row per meet), derives PBs
+ * (squat/bench/deadlift/total/DOTS), sex, and the fed/equip/bodyweight from the
+ * meet that produced their best DOTS. If the CSV can't be read it falls back
+ * to the lifter's web page. Then:
  *   - writes an updated data.js (roster details + scraped numbers)
  *   - writes changes.js (previous ranks for both views + this week's PB events)
  *
@@ -236,28 +237,75 @@ function splitCsvLine(line) {
   return out;
 }
 
-function sexFromCsv(csv) {
+// Read everything we need from a lifter's OpenPowerlifting CSV: best squat,
+// bench, deadlift, total and DOTS across all their meets (any equipment), the
+// fed / equipment / bodyweight of the meet with their best DOTS, and their sex.
+// Disqualified (DQ), doping-disqualified (DD) and no-show (NS) meets don't
+// count towards PBs. Throws if the file isn't in the expected shape, so the
+// caller can fall back to the web page.
+function parseCsv(csv) {
   const lines = csv.split(/\r?\n/).filter(Boolean);
-  if (lines.length < 2) return null;
-  const col = splitCsvLine(lines[0]).indexOf("Sex");
-  if (col < 0) return null;
-  let m = 0, f = 0;
-  for (const line of lines.slice(1)) {
-    const v = splitCsvLine(line)[col];
-    if (v === "M") m++;
-    else if (v === "F") f++;
+  if (lines.length < 2) throw new Error("empty CSV");
+  const head = splitCsvLine(lines[0]);
+  const col = (name) => head.indexOf(name);
+  const C = {
+    sex: col("Sex"), equip: col("Equipment"), bw: col("BodyweightKg"),
+    squat: col("Best3SquatKg"), bench: col("Best3BenchKg"), dead: col("Best3DeadliftKg"),
+    total: col("TotalKg"), dots: col("Dots"), place: col("Place"), fed: col("Federation"),
+  };
+  for (const k of ["squat", "bench", "dead", "total", "dots"]) {
+    if (C[k] < 0) throw new Error(`CSV has no ${k} column`);
   }
-  if (m > f) return "M";
-  if (f > m) return "F";
-  return null;
+  const num = (cells, i) => {
+    const v = parseFloat(i >= 0 ? cells[i] : "");
+    return isFinite(v) && v > 0 ? v : 0;   // failed attempts are negative
+  };
+
+  let best = { squat: 0, bench: 0, deadlift: 0, total: 0, dots: 0 };
+  let bestRow = null, m = 0, f = 0;
+  for (const line of lines.slice(1)) {
+    const cells = splitCsvLine(line);
+    const sex = cells[C.sex];
+    if (sex === "M") m++; else if (sex === "F") f++;
+    const place = (cells[C.place] || "").toUpperCase();
+    if (place === "DQ" || place === "DD" || place === "NS") continue;
+    best.squat = Math.max(best.squat, num(cells, C.squat));
+    best.bench = Math.max(best.bench, num(cells, C.bench));
+    best.deadlift = Math.max(best.deadlift, num(cells, C.dead));
+    best.total = Math.max(best.total, num(cells, C.total));
+    const dots = num(cells, C.dots);
+    if (dots > best.dots) { best.dots = dots; bestRow = cells; }
+  }
+  if (best.dots === 0) throw new Error("no DOTS in CSV");
+
+  return {
+    ...best,
+    fed: (bestRow[C.fed] || "").trim() || null,
+    equip: (bestRow[C.equip] || "").trim() || null,
+    bodyweight: (bestRow[C.bw] || "").trim() || null,
+    sex: m > f ? "M" : f > m ? "F" : null,
+  };
 }
 
-async function fetchSex(slug) {
+async function fetchCsv(slug) {
   const res = await fetch(CSV_BASE + slug, {
     headers: { "User-Agent": "ImplexusLeaderboard/1.0 (gym leaderboard refresh)" },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return sexFromCsv(await res.text());
+  return res.text();
+}
+
+// One lifter: CSV first (one request); the web page only if the CSV fails.
+async function scrapeLifter(slug) {
+  let csvError;
+  try {
+    return { ...parseCsv(await fetchCsv(slug)), source: "csv" };
+  } catch (err) {
+    csvError = err.message;
+  }
+  await sleep(REQUEST_DELAY_MS);
+  const page = parseProfile(await fetchProfile(slug));
+  return { ...page, sex: page.sexFromClasses, source: "page", csvError };
 }
 
 // ── Ranking helper ───────────────────────────────────────────────
@@ -413,13 +461,25 @@ async function main() {
   const updated = [];
   const newPbEvents = [];
   const pending = new Set();   // new lifters whose profile couldn't be read yet
+  const sources = { csv: 0, page: 0 };
   let okCount = 0;
 
   for (const lifter of lifters) {
     const next = { ...lifter };
     try {
-      const html = await fetchProfile(lifter.slug);
-      const scraped = parseProfile(html);
+      const scraped = await scrapeLifter(lifter.slug);
+      sources[scraped.source]++;
+      if (scraped.source === "page") {
+        console.warn(`  ! ${lifter.name}: CSV unusable (${scraped.csvError}); used the web page`);
+      }
+
+      // PBs shouldn't go down. If one does, the data source disagrees with what
+      // we had (or OpenPowerlifting corrected a result): say so in the log.
+      for (const k of ["squat", "bench", "deadlift", "total", "dots"]) {
+        if ((lifter[k] || 0) > 0 && scraped[k] < lifter[k] - 0.01) {
+          console.warn(`  ? ${lifter.name}: ${k} ${lifter[k]} -> ${scraped[k]} (lower than before, from ${scraped.source})`);
+        }
+      }
 
       // Detect genuine PB improvements in the actual lifts.
       // A DOTS change on its own does NOT count — OpenPowerlifting can recompute
@@ -457,16 +517,9 @@ async function main() {
       if (scraped.equip) next.equip = scraped.equip;
       if (scraped.bodyweight) next.bodyweight = scraped.bodyweight;
 
-      // Sex for the Men / Women filter: CSV first, then weight classes, else
-      // keep whatever we had. A failure here never fails the lifter.
-      let sex = null;
-      try {
-        await sleep(REQUEST_DELAY_MS);
-        sex = await fetchSex(lifter.slug);
-      } catch (err) {
-        console.warn(`  ! ${lifter.name}: sex lookup failed (${err.message})`);
-      }
-      sex = sex || scraped.sexFromClasses || lifter.sex || null;
+      // Sex for the Men / Women filter: from the CSV (or weight classes on the
+      // web-page fallback), else keep whatever we had
+      const sex = scraped.sex || lifter.sex || null;
       if (sex) next.sex = sex; else delete next.sex;
 
       okCount++;
@@ -572,6 +625,7 @@ async function main() {
   console.log(
     `\nDone. ${okCount}/${lifters.length} refreshed, ` +
     `${pbEvents.length} PB event(s) this week.` +
+    ` Read from CSV: ${sources.csv}, web page fallback: ${sources.page}.` +
     (pending.size ? ` Not added yet: ${[...pending].join(", ")}.` : "")
   );
 }

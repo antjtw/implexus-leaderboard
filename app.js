@@ -867,8 +867,9 @@
   }
 
   // ── Daily auto-reload (keeps an always-on screen fresh) ──────
-  // Each day at 12:15 local time (just after the ~noon scrape and Vercel
-  // redeploy), the page reloads itself to pick up the new data. The current
+  // Each day at 07:00 local time (after the 6am scrape and Vercel redeploy,
+  // with room for GitHub running late), the page reloads itself to pick up
+  // the new data. The current
   // state — static/dynamic and legacy on/off — is saved to the URL hash before
   // reloading and restored on load, so a gym TV in dynamic mode comes back into
   // dynamic mode rather than dropping to the static board.
@@ -881,8 +882,8 @@
   function scheduleDailyReload() {
     const now = new Date();
     const target = new Date(now);
-    target.setHours(12, 15, 0, 0);                // 12:15 local
-    // If today's 12:15 has already passed, schedule for tomorrow.
+    target.setHours(7, 0, 0, 0);                  // 07:00 local
+    // If today's 07:00 has already passed, schedule for tomorrow.
     if (target <= now) target.setDate(target.getDate() + 1);
 
     const ms = target - now;
@@ -968,7 +969,7 @@
     if (!el) return;
     const txt = lastUpdatedText();
     if (txt) el.textContent = txt + "."; // footer sentence keeps its full stop
-    // else: leave the static "Updated daily at midday." fallback in the HTML
+    // else: leave the static "Updated daily at 6am." fallback in the HTML
   }
 
   // ── Inits ─────────────────────────────────────────────────────
@@ -1026,7 +1027,7 @@
     loadRoster();           // apply live roster edits on top of data.js
     loadCompetitions();     // upcoming competitions for the TV
     setInterval(() => { loadRoster(); loadCompetitions(); }, CONFIG.refresh_ms);
-    scheduleDailyReload();  // arm the next daily 12:15 refresh
+    scheduleDailyReload();  // arm the next daily 07:00 reload
   }
 
   document.readyState === "loading"

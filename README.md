@@ -118,9 +118,11 @@ To replace an expired token later:
 ## Daily automatic refresh
 
 A GitHub Action (`.github/workflows/refresh.yml`) runs the scraper every day
-around midday UK time. For each lifter on the roster it fetches their OpenPowerlifting
-profile, re-derives their PBs and the fed/equip/bodyweight from their best-DOTS
-meet, and writes `data.js` + `changes.js` back to the repo. Vercel then
+at 6am UK time (GMT or BST: it wakes at 05:00 and 06:00 UTC and
+`scripts/refresh-gate.mjs` lets exactly one run through). For each lifter on the
+roster it downloads their OpenPowerlifting CSV (one request each, falling back to
+their web page if the CSV can't be read), works out their PBs, sex, and the
+fed/equip/bodyweight from their best-DOTS meet, and writes `data.js` + `changes.js` back to the repo. Vercel then
 redeploys automatically.
 
 **It is defensive:** a profile that fails to fetch or parse keeps its existing

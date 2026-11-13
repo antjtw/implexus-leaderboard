@@ -57,7 +57,7 @@
   function syncNote() {
     return ImplexusDB.instantSync
       ? "They'll appear on the leaderboard in a few minutes, once their numbers have been fetched from OpenPowerlifting."
-      : "They'll appear on the leaderboard after the next daily refresh at midday, so within 24 hours.";
+      : "They'll appear on the leaderboard after the next daily refresh at 6am, so within 24 hours.";
   }
 
   const ERRORS = {

@@ -1,14 +1,16 @@
 name: Daily leaderboard refresh
 
-# Runs daily at noon UK time, and can be triggered by hand.
-# Note: GitHub schedules use UTC and can drift a few minutes under load.
-#  - 12:00 GMT  (winter) = 12:00 UTC
-#  - 12:00 BST  (summer) = 11:00 UTC
-# We run at 11:00 UTC so it lands at noon during British Summer Time, and
-# 11:00 in winter — close enough for a daily gym board. Adjust if you prefer.
+# Runs every morning at 6am UK time, and can be triggered by hand.
+# GitHub schedules are in UTC and don't know about British Summer Time, so it
+# wakes at both 05:00 and 06:00 UTC and the first step decides:
+#  - before 6am in the UK (the 05:00 UTC wake in winter): skip
+#  - already refreshed today at or after 6am UK (the second wake): skip
+#  - otherwise: refresh
+# That gives 6am all year, once a day, even if GitHub runs a schedule late.
 on:
   schedule:
-    - cron: "0 11 * * *"   # 11:00 UTC daily (noon BST / 11am GMT)
+    - cron: "0 5 * * *"    # 06:00 BST (summer)
+    - cron: "0 6 * * *"    # 06:00 GMT (winter)
   workflow_dispatch: {}    # manual "Run workflow" button
   repository_dispatch:     # sent by Supabase when the roster changes
     types: [roster-changed]  # (optional; see supabase/instant-sync.sql)
@@ -29,15 +31,24 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
 
+      - name: Is it time? (6am UK, once a day)
+        id: gate
+        env:
+          EVENT: ${{ github.event_name }}
+        run: node scripts/refresh-gate.mjs >> "$GITHUB_OUTPUT"
+
       - name: Set up Node
+        if: steps.gate.outputs.run == 'true'
         uses: actions/setup-node@v5
         with:
           node-version: "24"
 
       - name: Run scraper
+        if: steps.gate.outputs.run == 'true'
         run: node scripts/scrape.mjs
 
       - name: Commit changes if any
+        if: steps.gate.outputs.run == 'true'
         run: |
           git config user.name  "Implexus Leaderboard Bot"
           git config user.email "actions@github.com"
