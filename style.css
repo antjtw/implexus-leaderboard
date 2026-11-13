@@ -1830,3 +1830,16 @@ body.dyn-on main { display: none; }
   text-shadow: none !important;
   box-shadow: none !important;
 }
+
+/* ── Personal name styles (TV) ──────────────────────────── */
+/* Mike: a bright red, about 6:1 contrast on the TV's near-black */
+#dynamic-overlay .name-red { color: #FF5A5F; }
+/* Joe: a left-to-right rainbow, in brighter pride colours so every band
+   reads on black (the flag's dark blue and violet would disappear) */
+#dynamic-overlay .name-rainbow {
+  background: linear-gradient(90deg, #FF4D4D 0%, #FF9F1C 20%, #FFE14D 40%, #3DDC6B 60%, #4D9BFF 80%, #B36BFF 100%);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}

@@ -650,7 +650,7 @@
     <div class="dyn-row" data-rank="${rank}">
       <div class="dyn-bar" style="width:${width}%"></div>
       <span class="dyn-rank ${rankClass}">${rank}${arrows ? movementArrow(lifter.slug, rank) : ""}</span>
-      <span class="dyn-name">${esc(lifter.name)}${legacyTag}</span>
+      <span class="dyn-name">${styledName(lifter.slug, lifter.name)}${legacyTag}</span>
       <span class="dyn-stats">
         ${stat("SQ", "squat")}
         ${stat("BP", "bench")}
@@ -690,7 +690,7 @@
       return `
         <div class="dyn-fighter dyn-fighter-${side} ${fakeClass} ${teamClass}">
           ${imageHTML}
-          <div class="dyn-fighter-name">${esc(l.name)}</div>
+          <div class="dyn-fighter-name">${styledName(l.slug, l.name)}</div>
           ${dotsDisplay(l)}
           <div class="dyn-fighter-meta">${metaLine(l)}</div>
         </div>`;
@@ -728,6 +728,18 @@
     holdTimeout = setTimeout(nextSlide, CONFIG.rivalry_hold_ms);
   }
 
+  // ── Personal name styles (TV only) ───────────────────────────
+  // Keyed by OpenPowerlifting profile, so they survive a rename.
+  const NAME_STYLES = {
+    mikejones1: "name-red",
+    joecurzon: "name-rainbow",
+  };
+
+  function styledName(slug, name) {
+    const cls = slug && NAME_STYLES[slug];
+    return cls ? `<span class="${cls}">${esc(name)}</span>` : esc(name);
+  }
+
   // ── PB callout slide (this week's new personal bests) ─────────
   // The event stores the name at scrape time; prefer the current one
   function currentName(ev) {
@@ -751,7 +763,7 @@
     overlay.innerHTML = `
       <div class="dyn-rivalry dyn-pb">
         <div class="dyn-rivalry-label dyn-pb-label">New PB</div>
-        <div class="dyn-pb-name">${esc(currentName(ev))}</div>
+        <div class="dyn-pb-name">${styledName(ev.slug, currentName(ev))}</div>
         <div class="dyn-pb-dots">
           <span class="dyn-pb-dots-val">${fmtDots(ev.dots.to)}</span>
           <span class="dyn-pb-dots-tag">DOTS</span>
@@ -785,7 +797,7 @@
     const entries = (comp.competition_entries || []).map(e => {
       const r = e.lifter_id != null ? rosterById.get(e.lifter_id) : null;
       const onBoard = r ? LIFTERS.find(l => l.slug === r.slug) : null;
-      return { name: onBoard ? onBoard.name : e.name, dots: onBoard ? onBoard.dots : null };
+      return { name: onBoard ? onBoard.name : e.name, dots: onBoard ? onBoard.dots : null, slug: onBoard ? onBoard.slug : null };
     }).sort((a, b) => (b.dots != null ? b.dots : -1) - (a.dots != null ? a.dots : -1));
 
     // A 10-segment "prep" bar over an 8-week build: fuller as the day nears
@@ -800,7 +812,7 @@
     const lifters = entries.length
       ? entries.map((e, i) => `
           <div class="dyn-comp-lifter" style="--i:${i}">
-            <span class="dyn-comp-name">${esc(e.name)}</span>
+            <span class="dyn-comp-name">${styledName(e.slug, e.name)}</span>
             ${e.dots != null ? `<span class="dyn-comp-dots">${fmtDots(e.dots)}</span>` : ""}
           </div>`).join("")
       : `<div class="dyn-comp-tbc">Line-up to be confirmed</div>`;
