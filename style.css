@@ -909,10 +909,12 @@ main {
 
 .dyn-gap-bar-fill {
   height: 100%;
-  width: 0;
+  width: 100%;
   background: #FFD500;
   border-radius: 2px;
-  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Portrait adjustments */
@@ -1813,4 +1815,18 @@ main button:focus-visible,
   margin-right: 1em;
   color: #FFD500;
   opacity: 0.85;
+}
+
+/* ── TV performance ─────────────────────────────────────── */
+/* In dynamic mode the list view is fully covered, so don't draw it at all */
+body.dyn-on .site-header,
+body.dyn-on main { display: none; }
+
+/* ?lite: no animations, fades or glows on the TV, for weak TV browsers */
+.lite #dynamic-overlay,
+.lite #dynamic-overlay * {
+  animation: none !important;
+  transition: none !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
 }

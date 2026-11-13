@@ -944,6 +944,9 @@
     if (btn) btn.addEventListener("click", open);
   }
 
+  // app.js loads this file on the first tap of the cog, then calls open()
+  window.ImplexusAdmin = { open };
+
   document.readyState === "loading"
     ? document.addEventListener("DOMContentLoaded", init)
     : init();

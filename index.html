@@ -29,10 +29,45 @@
   <meta name="twitter:description" content="Current and former members ranked by their best DOTS score. Updated weekly." />
   <meta name="twitter:image" content="/img/og-image.png" />
 
+  <!-- ?debug in the address shows errors and the browser's details on screen,
+       for diagnosing the gym TV. Old-style JavaScript so any TV can run it. -->
+  <script>
+    (function () {
+      if (!/[?&]debug\b/.test(location.search)) return;
+      var box, lines = [];
+      function show(msg) {
+        lines.push(new Date().toTimeString().slice(0, 8) + "  " + msg);
+        if (lines.length > 12) lines.shift();
+        if (!box && document.body) {
+          box = document.createElement("pre");
+          box.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:2147483647;margin:0;padding:8px 12px;" +
+            "background:rgba(0,0,0,.85);color:#7dffb0;font:14px/1.4 monospace;white-space:pre-wrap;pointer-events:none";
+          document.body.appendChild(box);
+        }
+        if (box) box.textContent = lines.join("\n");
+      }
+      window.addEventListener("error", function (e) {
+        show("ERROR " + (e.message || "?") + "  @ " + (e.filename || "").split("/").pop() + ":" + (e.lineno || "?"));
+      });
+      window.addEventListener("unhandledrejection", function (e) {
+        show("PROMISE " + (e.reason && e.reason.message ? e.reason.message : e.reason));
+      });
+      document.addEventListener("DOMContentLoaded", function () {
+        show("Browser: " + navigator.userAgent);
+        show("Screen: " + screen.width + "x" + screen.height + " @" + (window.devicePixelRatio || 1) + "x, window " + innerWidth + "x" + innerHeight);
+        if (performance && performance.memory) {
+          setInterval(function () {
+            show("JS memory: " + Math.round(performance.memory.usedJSHeapSize / 1048576) + " MB of " +
+              Math.round(performance.memory.jsHeapSizeLimit / 1048576) + " MB");
+          }, 60000);
+        }
+      });
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=9" />
+  <link rel="stylesheet" href="style.css?v=10" />
 </head>
 <body>
 
@@ -95,7 +130,6 @@
   <script src="supabase.js?v=4"></script>
   <script src="data.js?v=3"></script>
   <script src="changes.js?v=2"></script>
-  <script src="app.js?v=8"></script>
-  <script src="admin.js?v=5"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

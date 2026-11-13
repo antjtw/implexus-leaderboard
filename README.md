@@ -176,6 +176,19 @@ Sex comes from each lifter's OpenPowerlifting CSV during the daily refresh,
 falling back to weight classes that only exist for one sex. The Men / Women
 buttons appear once the refresh has found it for at least one lifter.
 
+## Gym TV tips
+
+- **`?lite`** at the end of the address (e.g. `https://…/?lite`) turns off every
+  animation, fade and glow in dynamic mode. Use it if the TV's browser struggles;
+  the daily reload keeps it.
+- **`?debug`** shows a small log at the bottom of the screen: any JavaScript
+  errors, the browser's name and version, the screen size and (where the
+  browser reports it) memory use. Handy for working out why the TV misbehaves.
+- In dynamic mode the list view underneath isn't drawn at all, and the admin
+  code is only downloaded when someone taps the cog, to keep the TV's work down.
+- The site's JavaScript sticks to features from around 2018, which older TV
+  browsers understand. Check new code still parses as ES2018 before shipping.
+
 ## Dynamic mode
 
 Click **Dynamic** to go fullscreen. The leaderboard toggles (legacy on/off) are

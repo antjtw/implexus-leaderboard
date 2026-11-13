@@ -3,6 +3,11 @@
 (function () {
 
   // ── Config ────────────────────────────────────────────────────
+  // ?lite in the address turns off every animation and fade on the TV, for
+  // weak TV browsers. The daily reload keeps the address, so it sticks.
+  const LITE = /[?&]lite\b/.test(window.location.search);
+  if (LITE) document.documentElement.classList.add("lite");
+
   const CONFIG = {
     rivalry_count:      12,      // size of the eligible pool to sample from
     rivalries_per_break:6,       // how many rivalries shown between each list page-pass
@@ -171,7 +176,7 @@
       build: () => ({
         a: realFighter("wyliesung"),
         b: { name: "The Pre-Comp Bloat", dots: 0, fed: "Hotel Room", equip: "Two Tubs", bodyweight: "Rising", fake: true,
-             image: "img/wylie-bloat.png" },
+             image: "img/wylie-bloat.jpeg" },
         caption: "Weigh-in done, the refeed begins. Wylie has the numbers. The bloat has the night off. Both are winning.",
       }),
     },
@@ -534,7 +539,11 @@
     </article>`;
   }
 
+  let staticDirty = false;   // list view changed while hidden behind the TV
+
   function render() {
+    // The list view is hidden in dynamic mode, so build it when it's next seen
+    if (dynamicActive) { staticDirty = true; paintControls(); return; }
     const container = document.getElementById("leaderboard");
     if (!container) return;
     paintControls();
@@ -581,6 +590,8 @@
   }
 
   // ── Dynamic mode ──────────────────────────────────────────────
+
+  if (LITE) { CONFIG.page_fade_ms = 0; CONFIG.cascade_stagger_ms = 0; }
 
   function createOverlay() {
     const el = document.createElement("div");
@@ -804,7 +815,7 @@
     // Animate gap bar in
     requestAnimationFrame(() => {
       const fill = overlay.querySelector(".dyn-gap-bar-fill");
-      if (fill) fill.style.width = "100%";
+      if (fill) fill.style.transform = "scaleX(1)";
     });
 
     holdTimeout = setTimeout(nextSlide, CONFIG.rivalry_hold_ms);
@@ -913,6 +924,7 @@
   // ── Enter / exit dynamic ──────────────────────────────────────
   function enterDynamic() {
     dynamicActive = true;
+    document.body.classList.add("dyn-on");   // hides the list view: less for the TV to draw
     pbCursor = 0;
     const list = getList();
     dynamicPlaylist = buildPlaylist(list);
@@ -937,6 +949,8 @@
     clearDynamic();
 
     if (overlay) { overlay.remove(); overlay = null; }
+    document.body.classList.remove("dyn-on");
+    if (staticDirty) { staticDirty = false; render(); }
 
     // Update hash to reflect that we're back on the static board
     try { window.history.replaceState(null, "", "#" + currentStateHash()); } catch (_) {}
@@ -1079,14 +1093,29 @@
     btn.addEventListener("click", enterDynamic);
   }
 
+  // Admin code is only fetched when someone taps the cog, so the TV never
+  // downloads or parses it
+  function initAdminLoader() {
+    const btn = document.getElementById("admin-open");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      if (window.ImplexusAdmin) return;          // admin.js handles it from now on
+      const s = document.createElement("script");
+      s.src = "admin.js?v=6";
+      s.onload = () => { if (window.ImplexusAdmin) window.ImplexusAdmin.open(); };
+      document.body.appendChild(s);
+    }, { once: true });
+  }
+
   function init() {
     initTheme();
     initLegacy();
     initDynamic();
     initBoardControls();
-    render();
+    initAdminLoader();
     setUpdatedLine();       // show real refresh date if available
     restoreFromHash();      // re-apply state (dynamic by default)
+    render();               // deferred until the list view is shown
     loadRoster();           // apply live roster edits on top of data.js
     loadCompetitions();     // upcoming competitions for the TV
     setInterval(() => { loadRoster(); loadCompetitions(); }, CONFIG.refresh_ms);
