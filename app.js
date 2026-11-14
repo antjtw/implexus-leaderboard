@@ -392,12 +392,11 @@
         <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/>
       </svg>`;
 
-  // List view: the icon links to their Instagram; on wide screens the handle
-  // shows beside it too
+  // List view: just the icon, linking to their Instagram
   function igLink(handle) {
     if (!handle) return "";
     return `<a class="ig-link" href="https://instagram.com/${handle}/" target="_blank" rel="noopener" aria-label="@${esc(handle)} on Instagram">
-      ${IG_ICON}<span class="ig-handle" aria-hidden="true">@${esc(handle)}</span>
+      ${IG_ICON}
     </a>`;
   }
 

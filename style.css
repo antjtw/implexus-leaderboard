@@ -1870,14 +1870,3 @@ body.dyn-on main { display: none; }
   .dyn-ig { display: none; }
 }
 
-/* List view: handle text beside the icon on wide screens; icon only on phones */
-.ig-handle { display: none; }
-@media (min-width: 900px) {
-  .ig-handle {
-    display: inline;
-    margin-left: 5px;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-  }
-}
