@@ -374,9 +374,10 @@
     </a>`;
   }
 
-  // TV: the handle after the name, on large landscape screens only
+  // TV: the handle after the name as plain text (nothing to tap on a TV, it's
+  // there so people can see it and follow), on large landscape screens only
   function dynIg(handle) {
-    return handle ? `<span class="dyn-ig">${IG_ICON}<span class="dyn-ig-text">@${esc(handle)}</span></span>` : "";
+    return handle ? `<span class="dyn-ig"><span class="dyn-ig-text">@${esc(handle)}</span></span>` : "";
   }
 
   function statItem(label, value, extraClass) {

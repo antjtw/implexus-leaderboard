@@ -1865,7 +1865,6 @@ body.dyn-on main { display: none; }
   color: rgba(255,255,255,0.5);       /* ~5:1 on the row background */
   overflow: hidden;
 }
-.dyn-ig .ig-icon { flex-shrink: 0; width: 1.1em; height: 1.1em; margin-right: 0.35em; }
 .dyn-ig-text { overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 1199px), (orientation: portrait) {
   .dyn-ig { display: none; }
