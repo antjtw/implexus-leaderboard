@@ -1843,3 +1843,42 @@ body.dyn-on main { display: none; }
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
+
+/* ── Instagram handles beside names ─────────────────────── */
+/* TV rows: name | @handle | (space) | lifts. Large landscape screens only. */
+.dyn-name-text {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dyn-ig {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5em;                 /* plus the row's 0.6em gap */
+  font-family: 'Inter', sans-serif;
+  font-size: 0.42em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(255,255,255,0.5);       /* ~5:1 on the row background */
+  overflow: hidden;
+}
+.dyn-ig .ig-icon { flex-shrink: 0; width: 1.1em; height: 1.1em; margin-right: 0.35em; }
+.dyn-ig-text { overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 1199px), (orientation: portrait) {
+  .dyn-ig { display: none; }
+}
+
+/* List view: handle text beside the icon on wide screens; icon only on phones */
+.ig-handle { display: none; }
+@media (min-width: 900px) {
+  .ig-handle {
+    display: inline;
+    margin-left: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+}

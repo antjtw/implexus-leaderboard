@@ -359,15 +359,24 @@
   }
 
   // ── Normal leaderboard render ─────────────────────────────────
-  function igLink(handle) {
-    if (!handle) return "";
-    return `<a class="ig-link" href="https://instagram.com/${handle}/" target="_blank" rel="noopener" aria-label="@${handle}">
-      <svg class="ig-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  const IG_ICON = `<svg class="ig-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="2"/>
         <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
         <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/>
-      </svg>
+      </svg>`;
+
+  // List view: the icon links to their Instagram; on wide screens the handle
+  // shows beside it too
+  function igLink(handle) {
+    if (!handle) return "";
+    return `<a class="ig-link" href="https://instagram.com/${handle}/" target="_blank" rel="noopener" aria-label="@${esc(handle)} on Instagram">
+      ${IG_ICON}<span class="ig-handle" aria-hidden="true">@${esc(handle)}</span>
     </a>`;
+  }
+
+  // TV: the handle after the name, on large landscape screens only
+  function dynIg(handle) {
+    return handle ? `<span class="dyn-ig">${IG_ICON}<span class="dyn-ig-text">@${esc(handle)}</span></span>` : "";
   }
 
   function statItem(label, value, extraClass) {
@@ -650,7 +659,7 @@
     <div class="dyn-row" data-rank="${rank}">
       <div class="dyn-bar" style="width:${width}%"></div>
       <span class="dyn-rank ${rankClass}">${rank}${arrows ? movementArrow(lifter.slug, rank) : ""}</span>
-      <span class="dyn-name">${styledName(lifter.slug, lifter.name)}${legacyTag}</span>
+      <span class="dyn-name"><span class="dyn-name-text">${styledName(lifter.slug, lifter.name)}</span>${dynIg(lifter.ig)}${legacyTag}</span>
       <span class="dyn-stats">
         ${stat("SQ", "squat")}
         ${stat("BP", "bench")}
