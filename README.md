@@ -33,6 +33,7 @@ daily scraper (`scripts/scrape.mjs`), which runs in GitHub Actions.
 - `supabase/setup.sql`: creates the roster table and the code-checked admin functions
 - `supabase/seed.sql`: copies the original roster into Supabase (run once)
 - `supabase/competitions.sql`: competitions and who's lifting in them
+- `supabase/change-counter.sql`: a counter that goes up on every admin change, for near-instant updates
 - `supabase/instant-sync.sql`: optional, refreshes the board within minutes of a change
 - `scripts/scrape.mjs`: daily refresh script
 - `.github/workflows/refresh.yml`: schedules the scrape
@@ -84,9 +85,21 @@ your real code to this repo.
 5. Put both into `config.js` and push. Vercel redeploys and the cog starts
    working.
 6. For competitions, run `supabase/competitions.sql` in the SQL Editor too.
+7. For near-instant updates, run `supabase/change-counter.sql` as well (see below).
 
 The daily refresh reads from Supabase every day, which should keep a free
 project from being paused for inactivity.
+
+### Near-instant updates
+
+Every screen showing the board asks Supabase for a single change counter every
+30 seconds (a few bytes). Database triggers bump it whenever lifters,
+competitions or line-ups change, so renames, legacy changes, removals and
+competitions reach the TV in under half a minute. Only when the counter moves
+does a screen re-read the roster and competitions. If the counter isn't set up
+or can't be reached, screens back off to every 5 minutes, and the full refresh
+every 15 minutes carries on regardless. New lifters still need their numbers
+fetched (the 6am refresh, or instant sync below).
 
 ### Keeping the project awake
 

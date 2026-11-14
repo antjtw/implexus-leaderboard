@@ -17,7 +17,8 @@
     cascade_stagger_ms: 60,      // delay between each row cascading in
     rivalry_hold_ms:    9000,    // how long each rivalry card holds
     comp_hold_ms:       13000,   // how long an upcoming-competition card holds
-    refresh_ms:         15 * 60 * 1000, // re-read roster + competitions (always-on TV)
+    refresh_ms:         15 * 60 * 1000, // re-read roster + competitions anyway (backstop)
+    change_check_ms:    30 * 1000,      // ask Supabase "has anything changed?"
     joke_chance_each:   0.0021,  // 0.21% chance per joke rivalry, per check
   };
 
@@ -219,6 +220,32 @@
     return ImplexusDB.listCompetitions(ukToday(), 6000)
       .then(rows => { applyCompetitions(rows); return rows; })
       .catch(() => null); // unreachable: no competition cards this time
+  }
+
+  // ── Near-instant admin changes ───────────────────────────────
+  // Every 30 seconds, ask Supabase for the change counter (a few bytes). Only
+  // when it moves do we re-read the roster and competitions. If the counter
+  // isn't set up or can't be reached, back off to every 5 minutes; the
+  // 15-minute full refresh still runs regardless.
+  let boardVersion = null;
+  let versionFailures = 0;
+  let versionBusy = false;
+  let lastVersionCheck = 0;
+
+  function checkForChanges() {
+    if (typeof ImplexusDB === "undefined" || !ImplexusDB.configured || !ImplexusDB.getBoardVersion) return;
+    const wait = versionFailures >= 3 ? 5 * 60 * 1000 : CONFIG.change_check_ms;
+    if (versionBusy || Date.now() - lastVersionCheck < wait - 1000) return;
+    versionBusy = true;
+    lastVersionCheck = Date.now();
+    ImplexusDB.getBoardVersion(8000)
+      .then(v => {
+        versionFailures = 0;
+        if (boardVersion !== null && v !== boardVersion) { loadRoster(); loadCompetitions(); }
+        boardVersion = v;
+      })
+      .catch(() => { versionFailures++; })
+      .then(() => { versionBusy = false; });
   }
 
   // Used by admin.js to refresh the board behind it after a change
@@ -1049,6 +1076,8 @@
     loadRoster();           // apply live roster edits on top of data.js
     loadCompetitions();     // upcoming competitions for the TV
     setInterval(() => { loadRoster(); loadCompetitions(); }, CONFIG.refresh_ms);
+    checkForChanges();
+    setInterval(checkForChanges, CONFIG.change_check_ms);
     scheduleDailyReload();  // arm the next daily 07:00 reload
   }
 

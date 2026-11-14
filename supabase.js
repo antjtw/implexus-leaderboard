@@ -49,6 +49,14 @@ const ImplexusDB = (function () {
     return rows;
   }
 
+  // The change counter (supabase/change-counter.sql): goes up whenever an
+  // admin changes anything. A few bytes, so it's cheap to ask often.
+  async function getBoardVersion(timeoutMs) {
+    const rows = await request("board_version?select=version&limit=1", { headers: headers() }, timeoutMs);
+    if (!Array.isArray(rows) || !rows.length) throw new Error("no board version");
+    return rows[0].version;
+  }
+
   // Admin functions return {ok: true, ...} or {ok: false, error: "code"}
   function rpc(fn, args) {
     return request(`rpc/${fn}`, {
@@ -58,5 +66,5 @@ const ImplexusDB = (function () {
     });
   }
 
-  return { configured, instantSync: Boolean(cfg.instantSync), listLifters, listCompetitions, rpc };
+  return { configured, instantSync: Boolean(cfg.instantSync), listLifters, listCompetitions, getBoardVersion, rpc };
 })();
