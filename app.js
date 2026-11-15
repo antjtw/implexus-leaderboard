@@ -19,6 +19,7 @@
     comp_hold_ms:       13000,   // how long an upcoming-competition card holds
     refresh_ms:         15 * 60 * 1000, // re-read roster + competitions anyway (backstop)
     change_check_ms:    30 * 1000,      // ask Supabase "has anything changed?"
+    data_check_ms:      3 * 60 * 1000,  // look for a newer data file (after a sync)
     joke_chance_each:   0.0021,  // 0.21% chance per joke rivalry, per check
   };
 
@@ -246,6 +247,22 @@
       })
       .catch(() => { versionFailures++; })
       .then(() => { versionBusy = false; });
+  }
+
+  // ── Newer data file? ─────────────────────────────────────────
+  // A sync (6am, or on demand from admin) publishes a new data.js and
+  // changes.js. Every few minutes, peek at changes.js (about 6KB) and reload
+  // the page if it was generated after the one we have. Works even where
+  // Supabase can't be reached, since it's the site's own file.
+  function checkDataFresh() {
+    if (!CH.generated || !window.fetch) return;
+    fetch("changes.js?check=" + Date.now(), { cache: "no-store" })
+      .then(r => (r.ok ? r.text() : ""))
+      .then(text => {
+        const m = text.match(/"generated":\s*"([^"]+)"/);
+        if (m && m[1] !== CH.generated && new Date(m[1]) > new Date(CH.generated)) reloadWhenIdle();
+      })
+      .catch(() => {});
   }
 
   // Used by admin.js to refresh the board behind it after a change
@@ -1057,7 +1074,7 @@
     btn.addEventListener("click", () => {
       if (window.ImplexusAdmin) return;          // admin.js handles it from now on
       const s = document.createElement("script");
-      s.src = "admin.js?v=6";
+      s.src = "admin.js?v=7";
       s.onload = () => { if (window.ImplexusAdmin) window.ImplexusAdmin.open(); };
       document.body.appendChild(s);
     }, { once: true });
@@ -1077,6 +1094,7 @@
     setInterval(() => { loadRoster(); loadCompetitions(); }, CONFIG.refresh_ms);
     checkForChanges();
     setInterval(checkForChanges, CONFIG.change_check_ms);
+    setInterval(checkDataFresh, CONFIG.data_check_ms);
     scheduleDailyReload();  // arm the next daily 07:00 reload
   }
 

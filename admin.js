@@ -68,6 +68,8 @@
     invalid: "Something in the form isn't valid. Check the details and try again.",
     not_found: "That's already been removed.",
     duplicate_entry: "Someone is in that competition twice. Remove the extra one and try again.",
+    not_set_up: "Sync isn't set up yet. See \u201cSync on demand\u201d in the README.",
+    too_soon: "A sync started less than a minute ago. It'll pick up everything, so there's no need to start another.",
   };
   const NETWORK_ERROR = "Couldn't reach the database. Check your connection and try again.";
 
@@ -192,6 +194,7 @@
       case "confirm-no": closeConfirm(); break;
       case "confirm-yes": runConfirm(); break;
       case "comps": show("comps"); break;
+      case "sync": requestSync(el); break;
       case "comp-new": show("compForm"); break;
       case "comp-edit": show("compForm", { id: Number(el.dataset.id) }); break;
       case "ask-remove-comp": askRemoveComp(); break;
@@ -322,6 +325,15 @@
               <span class="menu-text">
                 <span class="menu-title">Competitions</span>
                 <span class="menu-sub" id="admin-comp-count">Add meets and who's lifting</span>
+              </span>
+            </button>
+            <button type="button" class="menu-card" data-action="sync">
+              <span class="menu-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-14.3 4.9M4 12a8 8 0 0 1 14.3-4.9M18.5 3v4.2h-4.2M5.5 21v-4.2h4.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span class="menu-text">
+                <span class="menu-title">Sync now</span>
+                <span class="menu-sub" id="admin-sync-sub">Fetch everyone's latest numbers from OpenPowerlifting</span>
               </span>
             </button>
           </div>
@@ -852,6 +864,25 @@
         submitBtn.classList.remove("is-busy");
       }
     });
+  }
+
+  // ── Sync now ──────────────────────────────────────────────────
+  // Asks Supabase to start the GitHub refresh (supabase/instant-sync.sql).
+  async function requestSync(card) {
+    const sub = root.querySelector("#admin-sync-sub");
+    card.disabled = true;
+    if (sub) sub.textContent = "Starting…";
+    try {
+      await call("admin_request_sync", {});
+      if (sub) sub.textContent = "Started. Fresh numbers in about 2 minutes";
+      toast("Sync started. Fresh numbers in about 2 minutes, and screens reload by themselves.");
+    } catch (err) {
+      if (err.handled) return;
+      if (sub) sub.textContent = "Fetch everyone's latest numbers from OpenPowerlifting";
+      toast(friendlyError(err));
+    } finally {
+      setTimeout(() => { card.disabled = false; }, 3000);
+    }
   }
 
   // ── "Are you sure?" modal ─────────────────────────────────────

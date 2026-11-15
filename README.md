@@ -34,7 +34,7 @@ daily scraper (`scripts/scrape.mjs`), which runs in GitHub Actions.
 - `supabase/seed.sql`: copies the original roster into Supabase (run once)
 - `supabase/competitions.sql`: competitions and who's lifting in them
 - `supabase/change-counter.sql`: a counter that goes up on every admin change, for near-instant updates
-- `supabase/instant-sync.sql`: optional, refreshes the board within minutes of a change
+- `supabase/instant-sync.sql`: Sync now in admin, and automatic syncs after roster changes
 - `scripts/scrape.mjs`: daily refresh script
 - `.github/workflows/refresh.yml`: schedules the scrape
 
@@ -110,20 +110,31 @@ set up: it runs on Vercel's free plan once deployed. You can see each run under
 the project's **Settings → Cron Jobs** in Vercel, and open
 `/api/keepalive` in a browser to check it by hand (it answers `{"ok":true,...}`).
 
-### Instant sync (optional)
+### Sync on demand
 
-Without this, new lifters appear after the next daily refresh. With it, any
-admin change starts the refresh straight away, so they appear in a few minutes.
+Normally new numbers arrive with the 6am refresh. With this set up:
+
+- **Sync now** in admin fetches everyone's latest numbers straight away
+  (checked against the admin code, with a 60-second cooldown).
+- Adding, editing or removing a lifter starts a sync by itself, so a new lifter
+  is on the board in a few minutes.
+
+Either way, screens notice the newer data file within a few minutes and reload
+themselves (not while someone has admin open).
+
+Setup, once:
 
 1. On GitHub: **Settings → Developer settings → Personal access tokens →
    Fine-grained tokens → Generate new token**. Repository access: only
    `implexus-leaderboard`. Permissions: **Contents: Read and write**. Note the
-   expiry date; instant sync stops when the token expires.
+   expiry date; syncing stops when the token expires.
 2. In the Supabase SQL Editor, store it in Vault:
    `select vault.create_secret('github_pat_…', 'github_token');`
 3. Run `supabase/instant-sync.sql` in the SQL Editor.
-4. Set `instantSync: true` in `config.js` and push, so the admin screen says
+4. Set `instantSync: true` in `config.js` and push, so the admin screens say
    "a few minutes" instead of "within 24 hours".
+
+Until then, **Sync now** says it isn't set up, and nothing else changes.
 
 To replace an expired token later:
 `select vault.update_secret((select id from vault.secrets where name = 'github_token'), 'github_pat_new…');`
