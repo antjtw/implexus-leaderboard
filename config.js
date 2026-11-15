@@ -12,5 +12,5 @@
 const SUPABASE_CONFIG = {
   url: "https://eiduzzcpuytnxcljryye.supabase.co",
   key: "sb_publishable_ZzRRph1zAgu20jiMBvLTWQ_no1rmFLZ",
-  instantSync: false,
+  instantSync: true,
 };
