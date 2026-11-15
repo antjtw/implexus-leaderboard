@@ -148,7 +148,7 @@ const LIFTERS = [
     sex: "M",
   },
   {
-    name: "Dr. Pete King",
+    name: "Pete King",
     slug: "peterking1",
     ig: "kingpete__",
     squat: 220, bench: 155, deadlift: 270, total: 630, dots: 420.14,
@@ -201,6 +201,14 @@ const LIFTERS = [
     ig: "oliverbrameld",
     squat: 220, bench: 150, deadlift: 260, total: 620, dots: 412.18,
     fed: "CommonwealthPF", equip: "Raw", bodyweight: "85.34",
+    sex: "M",
+  },
+  {
+    name: "Victor Li",
+    slug: "zeyuli",
+    ig: "liii_bot",
+    squat: 240, bench: 120, deadlift: 260, total: 620, dots: 398.47,
+    fed: "EPA", equip: "Raw", bodyweight: "91.1",
     sex: "M",
   },
 
