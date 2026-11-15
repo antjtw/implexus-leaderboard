@@ -49,7 +49,7 @@ daily scraper (`scripts/scrape.mjs`), which runs in GitHub Actions.
 - **The page** shows `data.js`, then applies the live roster on top, so
   renames, legacy changes and removals show straight away. New lifters appear
   once the scraper has their numbers: at the next daily refresh, or within a
-  few minutes with instant sync.
+  few minutes with sync on demand.
 
 ## Admin
 
@@ -99,7 +99,7 @@ competitions reach the TV in under half a minute. Only when the counter moves
 does a screen re-read the roster and competitions. If the counter isn't set up
 or can't be reached, screens back off to every 5 minutes, and the full refresh
 every 15 minutes carries on regardless. New lifters still need their numbers
-fetched (the 6am refresh, or instant sync below).
+fetched (the 6am refresh, or sync on demand below).
 
 ### Keeping the project awake
 
