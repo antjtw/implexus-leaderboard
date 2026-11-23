@@ -71,8 +71,8 @@ const LIFTERS = [
     name: "Steve Whittles",
     slug: "stevewhittles",
     ig: "mrnorfgym",
-    squat: 235, bench: 150, deadlift: 270, total: 650, dots: 395.43,
-    fed: "WRPF-UK", equip: "Wraps", bodyweight: "102.8",
+    squat: 242.5, bench: 150, deadlift: 275, total: 667.5, dots: 400.74,
+    fed: "WRPF-UK", equip: "Wraps", bodyweight: "106.2",
     sex: "M",
   },
   {
