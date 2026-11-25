@@ -14,8 +14,8 @@
 //   ageing out after 7 days. A new PB for a lifter overrides their older one.
 
 const CHANGES = {
-  "generated": "2026-11-24T15:25:46.859Z",
-  "baselineDate": "2026-11-18T13:34:34.250Z",
+  "generated": "2026-11-25T15:09:11.576Z",
+  "baselineDate": "2026-11-25T15:09:11.576Z",
   "prevRankActive": {
     "wyliesung": 1,
     "mikejones1": 2,
@@ -26,9 +26,9 @@ const CHANGES = {
     "anthonywhite1": 7,
     "nickjohnstone": 8,
     "taliafirth": 9,
-    "ashlingkeeble": 10,
-    "zeyuli": 11,
-    "stevewhittles": 12,
+    "stevewhittles": 10,
+    "ashlingkeeble": 11,
+    "zeyuli": 12,
     "williamwebb1": 13,
     "leemccafferty": 14,
     "tobysolomon": 15,
@@ -66,9 +66,9 @@ const CHANGES = {
     "samriddharanjan": 20,
     "nickjohnstone": 21,
     "taliafirth": 22,
-    "ashlingkeeble": 23,
-    "zeyuli": 24,
-    "stevewhittles": 25,
+    "stevewhittles": 23,
+    "ashlingkeeble": 24,
+    "zeyuli": 25,
     "leohannan": 26,
     "williamwebb1": 27,
     "leemccafferty": 28,
@@ -282,8 +282,7 @@ const CHANGES = {
         "from": 395.43,
         "to": 400.74
       },
-      "date": "2026-11-23T15:30:47.004Z",
-      "placesUp": 2
+      "date": "2026-11-23T15:30:47.004Z"
     }
   ]
 };
