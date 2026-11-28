@@ -127,8 +127,8 @@ const LIFTERS = [
     name: "Jodie Barnsley",
     slug: "jodiebarnsley",
     ig: null,
-    squat: 117.5, bench: 70, deadlift: 122.5, total: 307.5, dots: 295.36,
-    fed: "WRPF-UK", equip: "Raw", bodyweight: "73.5",
+    squat: 125, bench: 72.5, deadlift: 122.5, total: 315, dots: 309.9,
+    fed: "BPU", equip: "Wraps", bodyweight: "73.6",
     sex: "F",
   },
   {

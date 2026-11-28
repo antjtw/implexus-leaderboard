@@ -14,7 +14,7 @@
 //   ageing out after 7 days. A new PB for a lifter overrides their older one.
 
 const CHANGES = {
-  "generated": "2026-11-27T14:30:10.471Z",
+  "generated": "2026-11-28T13:46:10.677Z",
   "baselineDate": "2026-11-25T15:09:11.576Z",
   "prevRankActive": {
     "wyliesung": 1,
@@ -157,8 +157,8 @@ const CHANGES = {
     "samlusher": 38,
     "robjacobs": 39,
     "roryturnbull": 40,
-    "kellybroadbent": 41,
-    "jodiebarnsley": 42,
+    "jodiebarnsley": 41,
+    "kellybroadbent": 42,
     "jacklarkinsthomas": 43,
     "laurajones6": 44
   },
@@ -283,6 +283,29 @@ const CHANGES = {
         "to": 400.74
       },
       "date": "2026-11-23T15:30:47.004Z"
+    },
+    {
+      "slug": "jodiebarnsley",
+      "name": "Jodie Barnsley",
+      "improved": {
+        "squat": {
+          "from": 117.5,
+          "to": 125
+        },
+        "bench": {
+          "from": 70,
+          "to": 72.5
+        },
+        "total": {
+          "from": 307.5,
+          "to": 315
+        }
+      },
+      "dots": {
+        "from": 295.36,
+        "to": 309.9
+      },
+      "date": "2026-11-28T13:46:10.677Z"
     }
   ]
 };
